@@ -29,3 +29,4 @@ hs_err_pid*
 # intellij project files
 /*.iml
 /.idea/
+/bin/
