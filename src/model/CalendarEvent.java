@@ -48,4 +48,28 @@ public class CalendarEvent implements Serializable {
     public String getNotes() {
         return notes;
     }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public void setStartTime(Date startTime) {
+        this.startTime = startTime;
+    }
+
+    public void setEndTime(Date endTime) {
+        this.endTime = endTime;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
 }
