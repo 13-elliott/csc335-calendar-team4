@@ -146,7 +146,7 @@ public class EventDialog extends Dialog<CalendarEvent> {
     private void updateNumDaysInMonth() {
         // change range of available day choices based on selected month
         Calendar tempCal = Calendar.getInstance();
-        tempCal.set(Calendar.MONTH, monthSelector.getValue());
+        tempCal.set(Calendar.MONTH, monthSelector.getSelectionModel().getSelectedIndex());
         int year = yearField.getText().isEmpty() ?
                 date.get(Calendar.YEAR) : Integer.parseInt(yearField.getText());
         tempCal.set(Calendar.YEAR, year);
@@ -174,6 +174,7 @@ public class EventDialog extends Dialog<CalendarEvent> {
     /**
      * the "result converter" for this Dialog object.
      * Returns an event if changes were committed.
+     *
      * @param bt the type of button that this is in response to.
      * @return a CalendarEvent object if changes were committed. Otherwise, null.
      */
