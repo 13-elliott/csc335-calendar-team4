@@ -58,10 +58,7 @@ public class EventDialog extends Dialog<CalendarEvent> {
         setupTimeElements();
         fillNonTimeElements();
         this.setResultConverter(this::getResult);
-
-        this.getDialogPane().getChildren().addAll(
-                // todo: add the children
-        );
+        this.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
     }
 
     /**
