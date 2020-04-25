@@ -214,18 +214,18 @@ public class EventDialog extends Dialog<CalendarEvent> {
      * initialize values for time-related graphical elements
      */
     private void setupTimeElements() {
-        for (int i = 0; i < 24; i++) {
-            String formatted = String.format("%02d", i);
-            startHourSelector.getItems().add(formatted);
-            endHourSelector.getItems().add(formatted);
-        }
         for (int i = 0; i < 60; i++) {
             String formatted = String.format("%02d", i);
+            if (i < 24) {  // hour
+                startHourSelector.getItems().add(formatted);
+                endHourSelector.getItems().add(formatted);
+                if (1 <= i && i <= 12) { // month
+                    monthSelector.getItems().add(String.valueOf(i));
+                }
+            }
+            // minute
             startMinuteSelector.getItems().add(formatted);
             endMinuteSelector.getItems().add(formatted);
-        }
-        for (int i = 1; i <= 12; i++) {
-            monthSelector.getItems().add(String.valueOf(i));
         }
 
         monthSelector.getSelectionModel().selectedItemProperty().addListener(
