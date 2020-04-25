@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class CalendarEvent implements Serializable {
+
+    private static final long serialVersionUID = -3059578212481803086L;
     private String title;
     private Date date;
     private Date startTime;

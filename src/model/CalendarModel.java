@@ -11,6 +11,7 @@ import java.util.List;
  * @author Jessica Coan
  */
 public class CalendarModel implements Serializable {
+    private static final long serialVersionUID = 5184911405741555741L;
     private List<CalendarEvent> events = new ArrayList<>();
 
     /**
@@ -19,8 +20,10 @@ public class CalendarModel implements Serializable {
      * @return an array with all the events in that year
      */
     public CalendarEvent[] getEventsInYear(int year) {
-        Calendar before = getCalendar(year - 1, 1, 1);
-        Calendar after = getCalendar(year + 1, 1, 1);
+        Calendar before = getCalendar(year, 1, 1);
+        before.add(Calendar.SECOND, -1);
+        Calendar after = getCalendar(year, 1, 1);
+        after.add(Calendar.YEAR, 1);
 
         return getEventsInRange(before, after);
     }
@@ -34,7 +37,7 @@ public class CalendarModel implements Serializable {
      */
     public CalendarEvent[] getEventsInMonth(int year, int month) {
         Calendar before = getCalendar(year, month, 1);
-        before.add(Calendar.DAY_OF_MONTH, -1);
+        before.add(Calendar.SECOND, -1);
         Calendar after = getCalendar(year, month, 1);
         after.add(Calendar.MONTH, 1);
 
@@ -51,7 +54,7 @@ public class CalendarModel implements Serializable {
      */
     public CalendarEvent[] getEventsInDay(int year, int month, int day) {
         Calendar before = getCalendar(year, month, day);
-        before.add(Calendar.DAY_OF_MONTH, -1);
+        before.add(Calendar.SECOND, -1);
         Calendar after = getCalendar(year, month, day);
         after.add(Calendar.DAY_OF_MONTH, 1);
 
@@ -69,7 +72,7 @@ public class CalendarModel implements Serializable {
      */
     public CalendarEvent[] getEventsInHour(int year, int month, int day, int hour) {
         Calendar before = getCalendar(year, month, day, hour, 0);
-        before.add(Calendar.MINUTE, -1);
+        before.add(Calendar.SECOND, -1);
         Calendar after = getCalendar(year, month, day, hour, 0);
         after.add(Calendar.HOUR_OF_DAY, 1);
 
