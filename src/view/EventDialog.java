@@ -1,6 +1,11 @@
 package view;
 
+import javafx.event.ActionEvent;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import model.CalendarEvent;
 
 import java.util.Calendar;
@@ -47,18 +52,11 @@ public class EventDialog extends Dialog<CalendarEvent> {
         endHourSelector = new ChoiceBox<>();
         endMinuteSelector = new ChoiceBox<>();
 
-        Label
-                titleLabel = new Label("Title"),
-                dateLabel = new Label("Date"),
-                startLabel = new Label("Start Time"),
-                endLabel = new Label("End Time"),
-                locationLabel = new Label("Location"),
-                notesLabel = new Label("Notes");
-
         setupTimeElements();
         fillNonTimeElements();
         this.setResultConverter(this::getResult);
         this.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        constructGUI();
     }
 
     /**
@@ -81,6 +79,46 @@ public class EventDialog extends Dialog<CalendarEvent> {
             }
         }
         return chg;
+    }
+
+    private void constructGUI() {
+        final BorderPane titleBP, dateBP, startBP, endBP, locationBP;
+        final HBox timeHB;
+
+        titleBP = new BorderPane();
+        titleBP.setLeft(new Label("Title: "));
+        titleBP.setCenter(titleEntryField);
+
+        dateBP = new BorderPane();
+        dateBP.setLeft(new Label("Date: "));
+        HBox dateHB = new HBox();
+        dateHB.setAlignment(Pos.CENTER);
+        dateHB.getChildren().addAll(
+                monthSelector, daySelector, yearField
+        );
+        dateBP.setCenter(dateHB);
+        yearField.setPromptText("Year");
+
+        // start and end times
+        startBP = new BorderPane();
+        startBP.setLeft(new Label("Start Time: "));
+        startBP.setCenter(new HBox(startHourSelector, startMinuteSelector));
+        endBP = new BorderPane();
+        endBP.setLeft(new Label("End Time: "));
+        endBP.setCenter(new HBox(endHourSelector, endMinuteSelector));
+        timeHB = new HBox(startBP, endBP);
+
+        locationBP = new BorderPane();
+        locationBP.setLeft(new Label("Location: "));
+        locationBP.setCenter(locationEntryField);
+
+        notesEntryArea.setPromptText("Notes");
+        notesEntryArea.setMaxSize(375, 100);
+
+        VBox mainColumn = new VBox(titleBP, dateBP, timeHB, locationBP, notesEntryArea);
+        mainColumn.setAlignment(Pos.TOP_CENTER);
+        this.setTitle("Event Editor");
+        this.getDialogPane().setContent(mainColumn);
     }
 
     /**
