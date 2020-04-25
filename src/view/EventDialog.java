@@ -169,12 +169,16 @@ public class EventDialog extends Dialog<CalendarEvent> {
         yearField.setPromptText("Year");
 
         // start and end times
+        final String timeSeparator = ":";
         startBP = new BorderPane();
         startBP.setLeft(new Label("Start Time: "));
-        startBP.setCenter(new HBox(startHourSelector, startMinuteSelector));
+        startBP.setLeft(new Label("Start Time: "));
+        startBP.setCenter(new HBox(startHourSelector, new Label(timeSeparator), startMinuteSelector));
+        ((HBox)startBP.getCenter()).setAlignment(Pos.CENTER);
         endBP = new BorderPane();
         endBP.setLeft(new Label("End Time: "));
-        endBP.setCenter(new HBox(endHourSelector, endMinuteSelector));
+        endBP.setCenter(new HBox(endHourSelector, new Label(timeSeparator), endMinuteSelector));
+        ((HBox)endBP.getCenter()).setAlignment(Pos.CENTER);
         timeHB = new HBox(startBP, endBP);
 
         locationBP = new BorderPane();
