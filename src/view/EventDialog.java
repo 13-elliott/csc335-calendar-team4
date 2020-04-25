@@ -113,6 +113,10 @@ public class EventDialog extends Dialog<CalendarEvent> {
             startHourSelector.getItems().add(i);
             endHourSelector.getItems().add(i);
         }
+        for (int i = 1; i <= 60; i++) {
+            startMinuteSelector.getItems().add(i);
+            endMinuteSelector.getItems().add(i);
+        }
         for (int i = 1; i <= 12; i++) {
             monthSelector.getItems().add(i);
         }
