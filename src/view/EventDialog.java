@@ -55,6 +55,11 @@ public class EventDialog extends Dialog<CalendarEvent> {
         date = Calendar.getInstance();
         start = Calendar.getInstance();
         end = Calendar.getInstance();
+        if (event != null) {
+            date.setTime(event.getDate());
+            start.setTime(event.getStartTime());
+            end.setTime(event.getEndTime());
+        }
 
         titleEntryField = new TextField();
         locationEntryField = new TextField();
@@ -227,20 +232,15 @@ public class EventDialog extends Dialog<CalendarEvent> {
         yearField.textProperty().addListener(
                 (a, b, c) -> updateNumDaysInMonth()
         );
-        if (event != null) {
-            date.setTime(event.getDate());
-            start.setTime(event.getStartTime());
-            end.setTime(event.getEndTime());
-        }
         yearField.setText(String.valueOf(date.get(Calendar.YEAR)));
-        monthSelector.setValue(date.get(Calendar.MONTH));
-        daySelector.setValue(date.get(Calendar.DAY_OF_MONTH));
+        monthSelector.getSelectionModel().select(date.get(Calendar.MONTH));
+        daySelector.getSelectionModel().select(date.get(Calendar.DAY_OF_MONTH));
 
-        startHourSelector.setValue(start.get(Calendar.HOUR_OF_DAY));
-        startMinuteSelector.setValue(start.get(Calendar.MINUTE));
+        startHourSelector.getSelectionModel().select(start.get(Calendar.HOUR_OF_DAY));
+        startMinuteSelector.getSelectionModel().select(start.get(Calendar.MINUTE));
 
-        endHourSelector.setValue(end.get(Calendar.HOUR_OF_DAY));
-        endMinuteSelector.setValue(end.get(Calendar.MINUTE));
+        endHourSelector.getSelectionModel().select(end.get(Calendar.HOUR_OF_DAY));
+        endMinuteSelector.getSelectionModel().select(end.get(Calendar.MINUTE));
     }
 
     /**
@@ -252,6 +252,7 @@ public class EventDialog extends Dialog<CalendarEvent> {
         Calendar tempCal = Calendar.getInstance();
         tempCal.set(Calendar.MONTH, monthSelector.getSelectionModel().getSelectedIndex());
         int year = yearField.getText().isEmpty() ?
+                // if yearField is empty, fall back onto the date Calendar object
                 date.get(Calendar.YEAR) : Integer.parseInt(yearField.getText());
         tempCal.set(Calendar.YEAR, year);
 
