@@ -14,9 +14,9 @@ import java.util.List;
 
 public class EventDialog extends Dialog<CalendarEvent> {
 
-//    public static final int
-//            DEFAULT_WIDTH = 300,
-//            DEFAULT_HEIGHT = 500;
+    private static final int
+            MAX_YEAR_LEN = 4,
+            MAX_NOTE_AREA_WID = 375, MAX_NOTE_AREA_HEI = 100;
 
     private final CalendarEvent event;
     private final TextField titleEntryField, locationEntryField, yearField;
@@ -91,6 +91,10 @@ public class EventDialog extends Dialog<CalendarEvent> {
                 chg.setText(onlyDigits.toString());
             }
         }
+        if (chg.getControlNewText().length() > MAX_YEAR_LEN) {
+            // reject changes that would put the text length over the maximum
+            return null;
+        }
         return chg;
     }
 
@@ -146,7 +150,7 @@ public class EventDialog extends Dialog<CalendarEvent> {
         locationBP.setCenter(locationEntryField);
 
         notesEntryArea.setPromptText("Notes");
-        notesEntryArea.setMaxSize(375, 100);
+        notesEntryArea.setMaxSize(MAX_NOTE_AREA_WID, MAX_NOTE_AREA_HEI);
 
         VBox mainColumn = new VBox(titleBP, dateBP, timeHB, locationBP, notesEntryArea);
         mainColumn.setAlignment(Pos.TOP_CENTER);
