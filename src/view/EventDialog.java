@@ -12,6 +12,15 @@ import model.CalendarEvent;
 import java.util.Calendar;
 import java.util.List;
 
+/**
+ * a modal dialog which can produce new or edit existing CalendarEvent objects
+ * instantiation of/changes to CalendarEvents only happens when the dialog is
+ * invoked via the blocking {@link Dialog#showAndWait()} call. If the user closes
+ * the window by any means other than the OK button, no object is created and all
+ * changes are discarded.
+ *
+ * @author Kitty Elliott
+ */
 public class EventDialog extends Dialog<CalendarEvent> {
 
     private static final int
@@ -27,10 +36,18 @@ public class EventDialog extends Dialog<CalendarEvent> {
             endHourSelector, endMinuteSelector;
     private final Calendar date, start, end;
 
+    /**
+     * create a new EventDialog which could produce a new CalendarEvent
+     */
     public EventDialog() {
         this(null);
     }
 
+    /**
+     * create a new EventDialog which could edit the given CalendarEvent
+     *
+     * @param event the event to be edited.
+     */
     public EventDialog(CalendarEvent event) {
         super();
         this.event = event;
@@ -73,8 +90,8 @@ public class EventDialog extends Dialog<CalendarEvent> {
     }
 
     /**
-     * intercepts changes to the yearField TextField. If the change contains
-     * any non-digit characters, those are filtered out.
+     * intercepts changes to the yearField TextField.
+     * If the change contains any non-digit characters, those are filtered out.
      *
      * @param chg represents the change
      * @return the possibly altered
@@ -98,6 +115,13 @@ public class EventDialog extends Dialog<CalendarEvent> {
         return chg;
     }
 
+    /**
+     * key event handler for yearField.
+     * Increments the year when up arrow is pressed.
+     * Decrements to a lower bound of zero if down arrow is pressed.
+     *
+     * @param e the key event
+     */
     private void yearKeyHandler(KeyEvent e) {
         int increment;
         switch (e.getCode()) {
@@ -118,6 +142,9 @@ public class EventDialog extends Dialog<CalendarEvent> {
         }
     }
 
+    /**
+     * put together the scene graph for this object's DialogPane
+     */
     private void constructGUI() {
         final BorderPane titleBP, dateBP, startBP, endBP, locationBP;
         final HBox timeHB;
@@ -159,7 +186,8 @@ public class EventDialog extends Dialog<CalendarEvent> {
     }
 
     /**
-     * set starting values for the contents of non-time-related graphical elements
+     * set starting values for the contents of non-time-related graphical elements.
+     * If the CalendarEvent is not null, its title, location, and notes will be loaded.
      */
     private void fillNonTimeElements() {
         if (event == null) {
@@ -178,7 +206,7 @@ public class EventDialog extends Dialog<CalendarEvent> {
     }
 
     /**
-     * set the starting values for time-related graphical elements
+     * initialize values for time-related graphical elements
      */
     private void setupTimeElements() {
         for (int i = 0; i < 24; i++) {
@@ -249,7 +277,8 @@ public class EventDialog extends Dialog<CalendarEvent> {
 
     /**
      * the "result converter" for this Dialog object.
-     * Returns an event if changes were committed.
+     * Returns an event if changes were committed. Used to produce
+     * the value returned by this.showAndWait()
      *
      * @param bt the type of button that this is in response to.
      * @return a CalendarEvent object if changes were committed. Otherwise, null.
