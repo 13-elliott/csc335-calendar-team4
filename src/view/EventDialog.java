@@ -155,11 +155,11 @@ public class EventDialog extends Dialog<CalendarEvent> {
      * set the starting values for time-related graphical elements
      */
     private void setupTimeElements() {
-        for (int i = 1; i <= 24; i++) {
+        for (int i = 0; i < 24; i++) {
             startHourSelector.getItems().add(i);
             endHourSelector.getItems().add(i);
         }
-        for (int i = 1; i <= 60; i++) {
+        for (int i = 0; i < 60; i++) {
             startMinuteSelector.getItems().add(i);
             endMinuteSelector.getItems().add(i);
         }
