@@ -56,6 +56,17 @@ public class EventDialog extends Dialog<CalendarEvent> {
         fillNonTimeElements();
         this.setResultConverter(this::getResult);
         this.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        this.getDialogPane().lookupButton(ButtonType.OK)
+                // show error popup and don't close the dialog
+                // if OK was clicked while year or title is blank
+                .addEventFilter(ActionEvent.ACTION, e -> {
+                    if (titleEntryField.getText().trim().isEmpty()
+                            || yearField.getText().isEmpty()) {
+                        e.consume();
+                        new Alert(Alert.AlertType.ERROR, "Neither Title nor Year may be blank")
+                                .showAndWait();
+                    }
+                });
         constructGUI();
     }
 
@@ -234,6 +245,5 @@ public class EventDialog extends Dialog<CalendarEvent> {
             }
         }
         return null;
-        // TODO: handle dialog window closing
     }
 }
