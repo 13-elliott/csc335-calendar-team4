@@ -30,7 +30,7 @@ public class EventDialog extends Dialog<CalendarEvent> {
     private final CalendarEvent event;
     private final TextField titleEntryField, locationEntryField, yearField;
     private final TextArea notesEntryArea;
-    private final ChoiceBox<Integer>
+    private final ChoiceBox<String>
             daySelector, monthSelector,
             startHourSelector, startMinuteSelector,
             endHourSelector, endMinuteSelector;
@@ -215,15 +215,17 @@ public class EventDialog extends Dialog<CalendarEvent> {
      */
     private void setupTimeElements() {
         for (int i = 0; i < 24; i++) {
-            startHourSelector.getItems().add(i);
-            endHourSelector.getItems().add(i);
+            String formatted = String.format("%02d", i);
+            startHourSelector.getItems().add(formatted);
+            endHourSelector.getItems().add(formatted);
         }
         for (int i = 0; i < 60; i++) {
-            startMinuteSelector.getItems().add(i);
-            endMinuteSelector.getItems().add(i);
+            String formatted = String.format("%02d", i);
+            startMinuteSelector.getItems().add(formatted);
+            endMinuteSelector.getItems().add(formatted);
         }
         for (int i = 1; i <= 12; i++) {
-            monthSelector.getItems().add(i);
+            monthSelector.getItems().add(String.valueOf(i));
         }
 
         monthSelector.getSelectionModel().selectedItemProperty().addListener(
@@ -257,7 +259,7 @@ public class EventDialog extends Dialog<CalendarEvent> {
         tempCal.set(Calendar.YEAR, year);
 
         final int numDays = tempCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-        List<Integer> selectorList = daySelector.getItems();
+        List<String> selectorList = daySelector.getItems();
         final int diff = selectorList.size() - numDays;
         if (diff > 0) {
             for (int i = 0; i < diff; i++) {
@@ -267,13 +269,13 @@ public class EventDialog extends Dialog<CalendarEvent> {
         } else if (diff < 0) {
             for (int i = selectorList.size() + 1; i <= numDays; i++) {
                 // append the missing days
-                selectorList.add(i);
+                selectorList.add(String.valueOf(i));
             }
         } else {
             return;
         }
         // if changed, reset selected day to the first
-        daySelector.setValue(1);
+        daySelector.setValue("1");
     }
 
     /**
