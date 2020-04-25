@@ -276,6 +276,17 @@ public class EventDialog extends Dialog<CalendarEvent> {
     }
 
     /**
+     * maps empty or whitespace-only strings to null
+     *
+     * @param s any string
+     * @return the given string unchanged, or null if that
+     * string is empty or contains only whitespace
+     */
+    private String nullIfBlank(String s) {
+        return s.trim().isEmpty() ? null : s;
+    }
+
+    /**
      * the "result converter" for this Dialog object.
      * Returns an event if changes were committed. Used to produce
      * the value returned by this.showAndWait()
@@ -291,11 +302,16 @@ public class EventDialog extends Dialog<CalendarEvent> {
                         date.getTime(),
                         start.getTime(),
                         end.getTime(),
-                        locationEntryField.getText(),
-                        notesEntryArea.getText()
+                        nullIfBlank(locationEntryField.getText()),
+                        nullIfBlank(notesEntryArea.getText())
                 );
             } else {
-                // TODO: mutate event
+                event.setTitle(titleEntryField.getText());
+                event.setDate(date.getTime());
+                event.setStartTime(start.getTime());
+                event.setEndTime(end.getTime());
+                event.setLocation(nullIfBlank(locationEntryField.getText()));
+                event.setNotes(nullIfBlank(notesEntryArea.getText()));
                 return event;
             }
         }
