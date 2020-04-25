@@ -3,6 +3,7 @@ package view;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -44,6 +45,7 @@ public class EventDialog extends Dialog<CalendarEvent> {
 
         yearField = new TextField();
         yearField.setTextFormatter(new TextFormatter<>(EventDialog::yearFormatter));
+        yearField.setOnKeyPressed(this::yearKeyHandler);
 
         daySelector = new ChoiceBox<>();
         monthSelector = new ChoiceBox<>();
@@ -90,6 +92,26 @@ public class EventDialog extends Dialog<CalendarEvent> {
             }
         }
         return chg;
+    }
+
+    private void yearKeyHandler(KeyEvent e) {
+        int increment;
+        switch (e.getCode()) {
+            case KP_UP:
+            case UP:
+                increment = 1;
+                break;
+            case KP_DOWN:
+            case DOWN:
+                increment = -1;
+                break;
+            default:
+                return;
+        }
+        int newYear = Integer.parseInt(yearField.getText()) + increment;
+        if (newYear >= 0) {
+            yearField.setText(String.valueOf(newYear));
+        }
     }
 
     private void constructGUI() {
