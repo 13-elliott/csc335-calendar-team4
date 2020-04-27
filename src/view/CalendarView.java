@@ -31,34 +31,32 @@ public class CalendarView extends Application implements java.util.Observer{
 	private Scene scene;
 	private ArrayList<TilePane> panes;
 	private Label title;
-	
-	/** Overridden Update method from observable
-	 * 
+
+	/**
+	 * Overridden Update method from observable
 	 * This method is called when the model is changed
-	 * 
-	 * @param o, an observable object
-	 * @param arg, the model object
-	 * @return none
+	 *
+	 * @param o   an observable object
+	 * @param arg the model object
 	 */
 	@Override
 	// This will Change depending on view later on
 	public void update(Observable o, Object arg) {
 		drawMonth();
 	}
-	
-	/** The start method overridden from Application
-	 * 
+
+	/**
+	 * The start method overridden from Application
 	 * This method is called when the Calendar class
 	 * calls it's launch method. This is the main
-	 * method of the program and holds all of the 
+	 * method of the program and holds all of the
 	 * initialization of the GUI and it's event handelers.
-	 * 
-	 * @param calendarStage, the main stage of the program.
-	 * @return none
+	 *
+	 * @param calendarStage the main stage of the program.
 	 */
 	@SuppressWarnings("deprecation")
 	@Override
-    public void start(Stage calendarStage) throws Exception {
+    public void start(Stage calendarStage) {
     	// Initialize current day and lists to help with construction
     	Date d = new Date();
     	year = d.getYear() + 1900; 	    	
@@ -112,7 +110,7 @@ public class CalendarView extends Application implements java.util.Observer{
 		grid.setGridLinesVisible(true);
 		
 		// List of panes created
-		panes = new ArrayList<TilePane>();
+		panes = new ArrayList<>();
 				
 		// Create borderpane
     	BorderPane b = new BorderPane();
@@ -193,44 +191,40 @@ public class CalendarView extends Application implements java.util.Observer{
 			else {
 				days[1] = 28;
 			}
-		    drawMonth();
+			drawMonth();
 		});
-		
+
 		b.setTop(vbox);
 		b.setCenter(grid);
 		scene = new Scene(b);
-		
+
 		// Set up main stage
 		calendarStage.setTitle("Calender");
 		calendarStage.setScene(scene);
 		calendarStage.show();
-    }
-    
-	/** This method draws the board
-	 * 
+	}
+
+	/**
 	 * This method draws the month view.
-	 * 
-	 * @param none
-	 * @return none
 	 */
-    @SuppressWarnings("deprecation")
+	@SuppressWarnings("deprecation")
 	public void drawMonth() {
-    	// *Remove Events will be implemented here*
-    	
-    	title.setText(months[month] + " " + year + "");
-    	int day = 1;
-    	boolean flag = false;
-    	    	    	
-    	Date real = new Date();
-    	Date beg = new Date(year, month, 1);
-    	
-		for(int i = 0; i < 6; i++) {
-			for(int j = 0; j < 7; j++) {
+		// *Remove Events will be implemented here*
+
+		title.setText(months[month] + " " + year + "");
+		int day = 1;
+		boolean flag = false;
+
+		Date real = new Date();
+		Date beg = new Date(year, month, 1);
+
+		for (int i = 0; i < 6; i++) {
+			for (int j = 0; j < 7; j++) {
 				// get each pane from left to right by row
-				TilePane t = panes.get(i*7 + j);
+				TilePane t = panes.get(i * 7 + j);
 				t.setStyle("");
 				// Checks if the pane is the same as the starting day
-				if(j == beg.getDay() -1 || beg.getDay() == 0) {
+				if (j == beg.getDay() - 1 || beg.getDay() == 0) {
 					if(beg.getDay() == 0) {
 						if(j == 6) {
 							flag = true;
@@ -241,67 +235,63 @@ public class CalendarView extends Application implements java.util.Observer{
 					}	
 				}
 				// if true and theres still enough days
-				if(flag == true && day <= days[beg.getMonth()]) {
+				if (flag && day <= days[beg.getMonth()]) {
 					t.setPrefHeight(100);
-					((Label)t.getChildren().get(0)).setText(day+"");
-					if(real.getDate() == day && year == (real.getYear()+1900) && 
+					((Label) t.getChildren().get(0)).setText(day + "");
+					if (real.getDate() == day && year == (real.getYear() + 1900) &&
 							months[real.getMonth()].equals(months[month])) {
 						t.setStyle("-fx-background-color:aqua");
 					}
 					CalendarEvent[] events = model.getEventsInDay(year, month, day);
 					// Loop through events and add them
-					if(events.length != 0) {
-						for(int k = 0; i < events.length; i++) {
+					if (events.length != 0) {
+						for (int k = 0; i < events.length; i++) {
 							Button button = new Button(events[k].getTitle());
 							t.getChildren().add(button);
 						}
 					}
 					day++;
-				}
-				else {
-					((Label)t.getChildren().get(0)).setText("");
+				} else {
+					((Label) t.getChildren().get(0)).setText("");
 					t.setStyle("-fx-background-color:white");
 				}
 			}
 		}
-    }
-    
-    /** This method removes events from each pane
-	 * 
+	}
+
+	/**
+	 * This method removes events from each pane
 	 * This method removes all of the events from
 	 * the panes in the grid so new events can be
 	 * updated for the month.
-	 * 
-	 * @param none
-	 * @return none
 	 */
-    public void removeEvents() {
-    	for(int i = 0; i < 6; i++) {
-    		for(int j = 0; j < 7; j++) {
-    			
-    		}
-    	}
-    }
-    
-    /** This method returns the day the user clicks on
-	 * 
-	 * This method, when given a row and column that 
+	public void removeEvents() {
+		for (int i = 0; i < 6; i++) {
+			for (int j = 0; j < 7; j++) {
+
+			}
+		}
+	}
+
+	/**
+	 * This method returns the day the user clicks on
+	 * <p>
+	 * This method, when given a row and column that
 	 * the user has clicked on, will return the int of
-	 * the day that was clicked. If the user clicks on 
+	 * the day that was clicked. If the user clicks on
 	 * a box that isn't a day, it returns -1.
-	 * 
-	 * @param int, the row clicked on
-	 * @param int, the column clicked on
-	 * @return int, the day clicked on or -1.
+	 *
+	 * @param row the row clicked on
+	 * @param col the column clicked on
+	 * @return the day clicked on or -1.
 	 */
-    public int getDayOnClick(int row, int col) {
-    	TilePane t = panes.get(row*7 + col);
-    	String dayClicked = ((Label)t.getChildren().get(0)).getText();
-    	if(dayClicked.equals("")) {
-    		return -1;
-    	}
-    	else {
-    		return Integer.parseInt(dayClicked);
+	public int getDayOnClick(int row, int col) {
+		TilePane t = panes.get(row * 7 + col);
+		String dayClicked = ((Label) t.getChildren().get(0)).getText();
+		if (dayClicked.equals("")) {
+			return -1;
+		} else {
+			return Integer.parseInt(dayClicked);
     	}
     }
 }
