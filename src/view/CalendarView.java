@@ -14,11 +14,10 @@ import model.CalendarEvent;
 import model.CalendarModel;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.format.TextStyle;
 import java.util.*;
 
-public class CalendarView extends Application implements java.util.Observer {
+public class CalendarView extends Application implements Observer {
     private LocalDate currentView;
     private GridPane grid;
     private Scene scene;
@@ -53,6 +52,7 @@ public class CalendarView extends Application implements java.util.Observer {
         // Initialize current day and lists to help with construction
         currentView = LocalDate.now();
         model = new CalendarModel();
+        model.addObserver(this);
 
         // Label on Calendar with all the weekdays as well as month/year label
         GridPane dayNames = new GridPane();
@@ -117,7 +117,8 @@ public class CalendarView extends Application implements java.util.Observer {
                         int day = getDayOnClick(clickedY, clickedX);
                         if (day > 0) {
                             Optional<CalendarEvent> newEvent =
-                                    EventDialog.newEventAt(currentView.withDayOfMonth(day)).showAndWait();
+                                    EventDialog.newEventAt(currentView.withDayOfMonth(day - 1)).showAndWait();
+                            newEvent.ifPresent(calendarEvent -> model.addEvent(calendarEvent));
                         }
                     }
                 }
@@ -176,13 +177,15 @@ public class CalendarView extends Application implements java.util.Observer {
 
                 beg = beg.plusDays(1);
 
-
-
-
+                t.getChildren().removeIf(n -> n instanceof Button);
                 CalendarEvent[] events = model.getEventsInDay(beg);
-                for (int k = 0; i < events.length; i++) {
-                    Button button = new Button(events[k].getTitle());
+                for (CalendarEvent event : events) {
+                    Button button = new Button(event.getTitle());
                     t.getChildren().add(button);
+                    button.setOnMouseClicked(butt -> {
+                        Optional<CalendarEvent> editEvent = EventDialog.editEvent(event).showAndWait();
+                        editEvent.ifPresent(calendarEvent -> model.markModified(event));
+                    });
                 }
             }
         }

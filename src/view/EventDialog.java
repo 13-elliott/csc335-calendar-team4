@@ -232,11 +232,11 @@ public class EventDialog extends Dialog<CalendarEvent> {
         startBP.setLeft(new Label("Start Time: "));
         startBP.setLeft(new Label("Start Time: "));
         startBP.setCenter(new HBox(startHourSelector, new Label(timeSeparator), startMinuteSelector));
-        ((HBox)startBP.getCenter()).setAlignment(Pos.CENTER);
+        ((HBox) startBP.getCenter()).setAlignment(Pos.CENTER);
         endBP = new BorderPane();
         endBP.setLeft(new Label("End Time: "));
         endBP.setCenter(new HBox(endHourSelector, new Label(timeSeparator), endMinuteSelector));
-        ((HBox)endBP.getCenter()).setAlignment(Pos.CENTER);
+        ((HBox) endBP.getCenter()).setAlignment(Pos.CENTER);
         timeHB = new HBox(startBP, endBP);
 
         locationBP = new BorderPane();
@@ -297,7 +297,7 @@ public class EventDialog extends Dialog<CalendarEvent> {
 
         yearField.setText(String.valueOf(date.getYear()));
         monthSelector.getSelectionModel().select(date.getMonthValue() - 1);
-        daySelector.getSelectionModel().select(date.getDayOfMonth() - 1);
+        daySelector.getSelectionModel().select(date.getDayOfMonth());
         yearField.textProperty().addListener((a, b, newVal) -> {
             updateNumDaysInMonth();
             date = date.withYear(Integer.parseInt(newVal));
@@ -334,9 +334,9 @@ public class EventDialog extends Dialog<CalendarEvent> {
         // change range of available day choices based on selected month
         final int numDays = LocalDate.of(
                 Integer.parseInt(yearField.getText()),
-                monthSelector.getSelectionModel().getSelectedIndex() + 1,
+                monthSelector.getSelectionModel().getSelectedIndex(),
                 1 // we only care about the year and month
-                ).lengthOfMonth();
+        ).lengthOfMonth();
         final int selected = daySelector.getSelectionModel().getSelectedIndex();
         List<String> selectorList = daySelector.getItems();
         final int diff = selectorList.size() - numDays;

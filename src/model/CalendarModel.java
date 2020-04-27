@@ -7,14 +7,16 @@ import java.util.*;
 
 /**
  * A representation of a calendar of events
+ *
  * @author Jessica Coan
  */
-public class CalendarModel extends Observable implements Serializable  {
+public class CalendarModel extends Observable implements Serializable {
     private static final long serialVersionUID = 5184911405741555741L;
     private List<CalendarEvent> events = new ArrayList<>();
 
     /**
      * Gets all the events within a specific year
+     *
      * @param year the year to get events from
      * @return an array with all the events in that year
      */
@@ -27,7 +29,8 @@ public class CalendarModel extends Observable implements Serializable  {
 
     /**
      * Gets all the events in a month and year
-     * @param year year of month
+     *
+     * @param year  year of month
      * @param month month to get events from
      * @return an array of events in that month
      */
@@ -41,9 +44,10 @@ public class CalendarModel extends Observable implements Serializable  {
     /**
      * Gets all the events on a particular day
      * NOTE: Numbering of months and days in Java Calendar start at 0
-     * @param year year of day
+     *
+     * @param year  year of day
      * @param month month of day
-     * @param day day to get events from
+     * @param day   day to get events from
      * @return an array of all the events on that day
      */
     public CalendarEvent[] getEventsInDay(int year, int month, int day) {
@@ -60,10 +64,11 @@ public class CalendarModel extends Observable implements Serializable  {
     /**
      * Get all the events that occur within a specific hour
      * NOTE: Numbering of month, day, and hour start at 0
-     * @param year year of hour
+     *
+     * @param year  year of hour
      * @param month month of hour
-     * @param day day of hour
-     * @param hour hour to get events from
+     * @param day   day of hour
+     * @param hour  hour to get events from
      * @return an array of all the events that occur in that hour
      */
     public CalendarEvent[] getEventsInHour(int year, int month, int day, int hour) {
@@ -79,8 +84,9 @@ public class CalendarModel extends Observable implements Serializable  {
 
     /**
      * Given a start date on a Calendar and an end date, find all events that occur after the start and before the end
+     *
      * @param before start date Calendar
-     * @param after end date Calendar
+     * @param after  end date Calendar
      * @return all the events that occur within the given range
      */
     public CalendarEvent[] getEventsInRange(LocalDateTime before, LocalDateTime after) {
@@ -94,6 +100,7 @@ public class CalendarModel extends Observable implements Serializable  {
 
     /**
      * Add a CalendarEvent to this calendar
+     *
      * @param event event to add
      */
     public void addEvent(CalendarEvent event) {
@@ -104,6 +111,7 @@ public class CalendarModel extends Observable implements Serializable  {
 
     /**
      * Remove a CalendarEvent from this calendar
+     *
      * @param event event to remove
      */
     public void removeEvent(CalendarEvent event) {
@@ -114,6 +122,7 @@ public class CalendarModel extends Observable implements Serializable  {
 
     /**
      * Mark that an event in this model has been modified, so Observers can be updated accordingly
+     *
      * @param event event that has been modified
      */
     public void markModified(CalendarEvent event) {
@@ -123,20 +132,22 @@ public class CalendarModel extends Observable implements Serializable  {
 
     /**
      * Checks if a given Date is between two Calendar dates
-     * @param date date to check
+     *
+     * @param date   date to check
      * @param before start date to check between
-     * @param after end date to check between
+     * @param after  end date to check between
      * @return true if the given Date is between the two Calendar dates
      */
     private boolean isDateInRange(LocalDateTime date, LocalDateTime before, LocalDateTime after) {
-        return  before.isBefore(date) && after.isAfter(date);
+        return after.isAfter(date) && before.isBefore(date);
     }
 
     /**
      * Returns a Calendar object set to a specific year, month, and day set
-     * @param year year of the calendar
+     *
+     * @param year  year of the calendar
      * @param month month of the calendar
-     * @param day day of the calendar
+     * @param day   day of the calendar
      * @return a calendar set to year, month, day, hour 0, minute 0
      */
     private LocalDateTime getDateTime(int year, int month, int day) {
@@ -145,10 +156,11 @@ public class CalendarModel extends Observable implements Serializable  {
 
     /**
      * Returns a Calendar object set to a specific year, month, day, hour, and minute
-     * @param year year of the calendar
-     * @param month month of the calendar
-     * @param day day of the calendar
-     * @param hour hour of the calendar
+     *
+     * @param year   year of the calendar
+     * @param month  month of the calendar
+     * @param day    day of the calendar
+     * @param hour   hour of the calendar
      * @param minute minute of the calendar
      * @return a Calendar object set to year, month, day, hour, minute
      */
