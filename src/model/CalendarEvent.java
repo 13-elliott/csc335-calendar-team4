@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class CalendarEvent implements Serializable {
+
+    private static final long serialVersionUID = -3059578212481803086L;
     private String title;
     private Date date;
     private Date startTime;
@@ -47,5 +49,29 @@ public class CalendarEvent implements Serializable {
 
     public String getNotes() {
         return notes;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public void setStartTime(Date startTime) {
+        this.startTime = startTime;
+    }
+
+    public void setEndTime(Date endTime) {
+        this.endTime = endTime;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 }
