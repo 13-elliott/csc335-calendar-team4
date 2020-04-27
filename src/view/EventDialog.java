@@ -9,8 +9,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import model.CalendarEvent;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 /**
@@ -35,7 +36,8 @@ public class EventDialog extends Dialog<CalendarEvent> {
             daySelector, monthSelector,
             startHourSelector, startMinuteSelector,
             endHourSelector, endMinuteSelector;
-    private final Calendar date, start, end;
+    private LocalDateTime date;
+    private LocalTime start, end;
 
     /**
      * Constructor.
@@ -50,28 +52,28 @@ public class EventDialog extends Dialog<CalendarEvent> {
      * If given null, then the current date and time will be used to set the
      * initial values.
      *
-     * @param seed either a {@link CalendarEvent}, {@link Date}, or null
+     * @param seed either a {@link CalendarEvent}, {@link LocalDate}, or null
      */
     private EventDialog(Object seed) {
         super();
 
-        date = Calendar.getInstance();
-        start = Calendar.getInstance();
-        end = Calendar.getInstance();
         if (seed instanceof CalendarEvent) {
             event = (CalendarEvent) seed;
-            date.setTime(event.getDate());
-            start.setTime(event.getStartTime());
-            end.setTime(event.getEndTime());
-        } else if (seed instanceof Date) {
+            date = event.getDate();
+            start = event.getStartTime();
+            end = event.getEndTime();
+        } else if (seed instanceof LocalDate) {
             event = null;
-            Date d = (Date) seed;
-            date.setTime(d);
-            start.setTime(d);
-            end.setTime(d);
+            LocalDate d = (LocalDate) seed;
+            date = LocalDateTime.of(d, LocalTime.now());
+            start = LocalTime.now();
+            end = LocalTime.now();
         } else {
             // initial values will be current date+time
             event = null;
+            date = LocalDateTime.now();
+            start = LocalTime.now();
+            end = LocalTime.now();
         }
 
         titleEntryField = new TextField();
@@ -103,7 +105,7 @@ public class EventDialog extends Dialog<CalendarEvent> {
                         new Alert(Alert.AlertType.ERROR, "Neither Title nor Year may be blank")
                                 .showAndWait();
                     }
-                    if (end.before(start)) {
+                    if (end.isBefore(start)) {
                         e.consume();
                         new Alert(Alert.AlertType.ERROR, "End Time must not be before Start Time")
                                 .showAndWait();
@@ -144,7 +146,7 @@ public class EventDialog extends Dialog<CalendarEvent> {
      * @return the EventDialog object which {@link java.util.Optional could} return
      * the new event when called via the blocking {@link super#showAndWait()} method.
      */
-    public static EventDialog newEventAt(Date dateTime) {
+    public static EventDialog newEventAt(LocalDate dateTime) {
         return new EventDialog(dateTime);
     }
 
@@ -276,7 +278,7 @@ public class EventDialog extends Dialog<CalendarEvent> {
      * initialize values for time-related graphical elements
      */
     private void setupTimeElements() {
-        final int numDays = date.getActualMaximum(Calendar.DAY_OF_MONTH);
+        final int numDays = date.getMonth().length(LocalDate.from(date).isLeapYear());
         for (int i = 0; i < 60; i++) {
             String formatted = String.format("%02d", i);
             String unformatted = String.valueOf(i);
@@ -295,35 +297,35 @@ public class EventDialog extends Dialog<CalendarEvent> {
             endMinuteSelector.getItems().add(formatted);
         }
 
-        yearField.setText(String.valueOf(date.get(Calendar.YEAR)));
-        monthSelector.getSelectionModel().select(date.get(Calendar.MONTH));
-        daySelector.getSelectionModel().select(date.get(Calendar.DAY_OF_MONTH) - 1);
+        yearField.setText(String.valueOf(date.getYear()));
+        monthSelector.getSelectionModel().select(date.getMonthValue() - 1);
+        daySelector.getSelectionModel().select(date.getDayOfMonth() - 1);
         yearField.textProperty().addListener((a, b, newVal) -> {
             updateNumDaysInMonth();
-            date.set(Calendar.YEAR, Integer.parseInt(newVal));
+            date = date.withYear(Integer.parseInt(newVal));
         });
         monthSelector.getSelectionModel().selectedIndexProperty()
                 .addListener((a, b, newVal) -> {
                     updateNumDaysInMonth();
-                    date.set(Calendar.MONTH, newVal.intValue());
+                    date = date.withMonth(newVal.intValue());
                 });
         daySelector.getSelectionModel().selectedIndexProperty().addListener(
-                (a, b, newVal) -> date.set(Calendar.DAY_OF_MONTH, newVal.intValue() + 1)
+                (a, b, newVal) -> date = date.withDayOfMonth(newVal.intValue())
         );
 
-        startHourSelector.getSelectionModel().select(start.get(Calendar.HOUR_OF_DAY));
-        startMinuteSelector.getSelectionModel().select(start.get(Calendar.MINUTE));
+        startHourSelector.getSelectionModel().select(start.getHour());
+        startMinuteSelector.getSelectionModel().select(start.getMinute());
         startHourSelector.getSelectionModel().selectedIndexProperty()
-                .addListener((a, b, newVal) -> start.set(Calendar.HOUR_OF_DAY, newVal.intValue()));
+                .addListener((a, b, newVal) -> start = start.withHour(newVal.intValue()));
         startMinuteSelector.getSelectionModel().selectedIndexProperty()
-                .addListener((a, b, newVal) -> start.set(Calendar.MINUTE, newVal.intValue()));
+                .addListener((a, b, newVal) -> start = start.withMinute(newVal.intValue()));
 
-        endHourSelector.getSelectionModel().select(end.get(Calendar.HOUR_OF_DAY));
-        endMinuteSelector.getSelectionModel().select(end.get(Calendar.MINUTE));
+        endHourSelector.getSelectionModel().select(end.getHour());
+        endMinuteSelector.getSelectionModel().select(end.getMinute());
         endHourSelector.getSelectionModel().selectedIndexProperty()
-                .addListener((a, b, newVal) -> end.set(Calendar.HOUR_OF_DAY, newVal.intValue()));
+                .addListener((a, b, newVal) -> end = end.withHour(newVal.intValue()));
         endMinuteSelector.getSelectionModel().selectedIndexProperty()
-                .addListener((a, b, newVal) -> end.set(Calendar.MINUTE, newVal.intValue()));
+                .addListener((a, b, newVal) -> end = end.withMinute(newVal.intValue()));
     }
 
     /**
@@ -332,15 +334,12 @@ public class EventDialog extends Dialog<CalendarEvent> {
      */
     private void updateNumDaysInMonth() {
         // change range of available day choices based on selected month
-        Calendar tempCal = Calendar.getInstance();
-        tempCal.set(Calendar.MONTH, monthSelector.getSelectionModel().getSelectedIndex());
         int year = yearField.getText().isEmpty() ?
                 // if yearField is empty, fall back onto the date Calendar object
-                date.get(Calendar.YEAR) : Integer.parseInt(yearField.getText());
-        tempCal.set(Calendar.YEAR, year);
-
-        final int numDays = tempCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-        final int selected = daySelector.getSelectionModel().getSelectedIndex() + 1; // account for zero-index
+                date.getYear() : Integer.parseInt(yearField.getText());
+        LocalDate temp = LocalDate.of(year, monthSelector.getSelectionModel().getSelectedIndex(), 1);
+        final int numDays = temp.getMonth().length(temp.isLeapYear());
+        final int selected = daySelector.getSelectionModel().getSelectedIndex();
         List<String> selectorList = daySelector.getItems();
         final int diff = selectorList.size() - numDays;
         if (diff > 0) {
@@ -383,17 +382,17 @@ public class EventDialog extends Dialog<CalendarEvent> {
             if (event == null) {
                 return new CalendarEvent(
                         titleEntryField.getText(),
-                        date.getTime(),
-                        start.getTime(),
-                        end.getTime(),
+                        date,
+                        start,
+                        end,
                         nullIfBlank(locationEntryField.getText()),
                         nullIfBlank(notesEntryArea.getText())
                 );
             } else {
                 event.setTitle(titleEntryField.getText());
-                event.setDate(date.getTime());
-                event.setStartTime(start.getTime());
-                event.setEndTime(end.getTime());
+                event.setDate(date);
+                event.setStartTime(start);
+                event.setEndTime(end);
                 event.setLocation(nullIfBlank(locationEntryField.getText()));
                 event.setNotes(nullIfBlank(notesEntryArea.getText()));
                 return event;

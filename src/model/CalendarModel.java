@@ -1,6 +1,8 @@
 package model;
 
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -17,10 +19,8 @@ public class CalendarModel extends Observable implements Serializable  {
      * @return an array with all the events in that year
      */
     public CalendarEvent[] getEventsInYear(int year) {
-        Calendar before = getCalendar(year, 1, 1);
-        before.add(Calendar.SECOND, -1);
-        Calendar after = getCalendar(year, 1, 1);
-        after.add(Calendar.YEAR, 1);
+        LocalDateTime before = getDateTime(year, 1, 1);
+        LocalDateTime after = getDateTime(year, 1, 1);
 
         return getEventsInRange(before, after);
     }
@@ -33,10 +33,8 @@ public class CalendarModel extends Observable implements Serializable  {
      * @return an array of events in that month
      */
     public CalendarEvent[] getEventsInMonth(int year, int month) {
-        Calendar before = getCalendar(year, month, 1);
-        before.add(Calendar.SECOND, -1);
-        Calendar after = getCalendar(year, month, 1);
-        after.add(Calendar.MONTH, 1);
+        LocalDateTime before = getDateTime(year, month, 1);
+        LocalDateTime after = getDateTime(year, month, 1);
 
         return getEventsInRange(before, after);
     }
@@ -50,12 +48,14 @@ public class CalendarModel extends Observable implements Serializable  {
      * @return an array of all the events on that day
      */
     public CalendarEvent[] getEventsInDay(int year, int month, int day) {
-        Calendar before = getCalendar(year, month, day);
-        before.add(Calendar.SECOND, -1);
-        Calendar after = getCalendar(year, month, day);
-        after.add(Calendar.DAY_OF_MONTH, 1);
+        LocalDateTime before = getDateTime(year, month, day);
+        LocalDateTime after = getDateTime(year, month, day);
 
         return getEventsInRange(before, after);
+    }
+
+    public CalendarEvent[] getEventsInDay(LocalDate day) {
+        return getEventsInDay(day.getYear(), day.getMonthValue(), day.getDayOfMonth());
     }
 
     /**
@@ -68,12 +68,14 @@ public class CalendarModel extends Observable implements Serializable  {
      * @return an array of all the events that occur in that hour
      */
     public CalendarEvent[] getEventsInHour(int year, int month, int day, int hour) {
-        Calendar before = getCalendar(year, month, day, hour, 0);
-        before.add(Calendar.SECOND, -1);
-        Calendar after = getCalendar(year, month, day, hour, 0);
-        after.add(Calendar.HOUR_OF_DAY, 1);
+        LocalDateTime before = getDateTime(year, month, day, hour, 0);
+        LocalDateTime after = getDateTime(year, month, day, hour, 0);
 
         return getEventsInRange(before, after);
+    }
+
+    public CalendarEvent[] getEventsInHour(LocalDateTime time) {
+        return getEventsInHour(time.getYear(), time.getMonthValue(), time.getHour(), time.getHour());
     }
 
     /**
@@ -82,7 +84,7 @@ public class CalendarModel extends Observable implements Serializable  {
      * @param after end date Calendar
      * @return all the events that occur within the given range
      */
-    public CalendarEvent[] getEventsInRange(Calendar before, Calendar after) {
+    public CalendarEvent[] getEventsInRange(LocalDateTime before, LocalDateTime after) {
         return events.parallelStream()
                 .filter(event -> isDateInRange(event.getDate(), before, after))
                 .toArray(CalendarEvent[]::new);
@@ -124,11 +126,8 @@ public class CalendarModel extends Observable implements Serializable  {
      * @param after end date to check between
      * @return true if the given Date is between the two Calendar dates
      */
-    private boolean isDateInRange(Date date, Calendar before, Calendar after) {
-        Calendar eventCal = Calendar.getInstance();
-        //Comparing a Date to a Calendar doesn't work, so this is what's required.
-        eventCal.setTime(date);
-        return before.before(eventCal) && after.after(eventCal);
+    private boolean isDateInRange(LocalDateTime date, LocalDateTime before, LocalDateTime after) {
+        return  before.isBefore(date) && after.isAfter(date);
     }
 
     /**
@@ -138,8 +137,8 @@ public class CalendarModel extends Observable implements Serializable  {
      * @param day day of the calendar
      * @return a calendar set to year, month, day, hour 0, minute 0
      */
-    private Calendar getCalendar(int year, int month, int day) {
-        return getCalendar(year, month, day, 0, 0);
+    private LocalDateTime getDateTime(int year, int month, int day) {
+        return getDateTime(year, month, day, 0, 0);
     }
 
     /**
@@ -151,11 +150,7 @@ public class CalendarModel extends Observable implements Serializable  {
      * @param minute minute of the calendar
      * @return a Calendar object set to year, month, day, hour, minute
      */
-    private Calendar getCalendar(int year, int month, int day, int hour, int minute) {
-        Calendar ret = Calendar.getInstance();
-        //12:00 AM January 1st 2020 is represented as YEAR=2020, MONTH=0, DAY_OF_MONTH=0, HOUR_OF_DAY=0, MINUTE=0
-        //If we want to pass in 'April 20', that'd have to be passed into the Calendar as 3, 19
-        ret.set(year, month, day, hour, minute);
-        return ret;
+    private LocalDateTime getDateTime(int year, int month, int day, int hour, int minute) {
+        return LocalDateTime.of(year, month, day, hour, minute);
     }
 }

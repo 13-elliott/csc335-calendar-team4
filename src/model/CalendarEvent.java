@@ -1,19 +1,21 @@
 package model;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 
 public class CalendarEvent implements Serializable {
 
     private static final long serialVersionUID = -3059578212481803086L;
     private String title;
-    private Date date;
-    private Date startTime;
-    private Date endTime;
+    private LocalDateTime date;
+    private LocalTime startTime;
+    private LocalTime endTime;
     private String location;
     private String notes;
 
-    public CalendarEvent(String title, Date date, Date startTime, Date endTime, String location, String notes) {
+    public CalendarEvent(String title, LocalDateTime date, LocalTime startTime, LocalTime endTime, String location, String notes) {
         this.title = title;
         this.date = date;
         this.startTime = startTime;
@@ -22,7 +24,7 @@ public class CalendarEvent implements Serializable {
         this.notes = notes;
     }
 
-    public CalendarEvent(String title, Date date) {
+    public CalendarEvent(String title, LocalDateTime date) {
         this.title = title;
         this.date = date;
     }
@@ -31,15 +33,15 @@ public class CalendarEvent implements Serializable {
         return title;
     }
 
-    public Date getDate() {
+    public LocalDateTime getDate() {
         return date;
     }
 
-    public Date getStartTime() {
+    public LocalTime getStartTime() {
         return startTime;
     }
 
-    public Date getEndTime() {
+    public LocalTime getEndTime() {
         return endTime;
     }
 
@@ -55,15 +57,15 @@ public class CalendarEvent implements Serializable {
         this.title = title;
     }
 
-    public void setDate(Date date) {
+    public void setDate(LocalDateTime date) {
         this.date = date;
     }
 
-    public void setStartTime(Date startTime) {
+    public void setStartTime(LocalTime startTime) {
         this.startTime = startTime;
     }
 
-    public void setEndTime(Date endTime) {
+    public void setEndTime(LocalTime endTime) {
         this.endTime = endTime;
     }
 
