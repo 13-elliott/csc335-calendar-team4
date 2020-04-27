@@ -108,17 +108,21 @@ public class EventDialog extends Dialog<CalendarEvent> {
      */
     private static TextFormatter.Change yearFormatter(TextFormatter.Change chg) {
         if ((chg.isAdded() || chg.isReplaced())) {
+            String chgText = chg.getText();
             StringBuilder onlyDigits = new StringBuilder();
             // filter out all non-digit chars,
-            chg.getText().chars().filter(Character::isDigit)
-                    // pushing them into the string builder
+            chgText.chars().filter(Character::isDigit)
+                    // pushing the remaining chars into the string builder
                     .forEach(i -> onlyDigits.append((char) i));
-            if (onlyDigits.length() != chg.getText().length()) {
+            if (onlyDigits.length() != chgText.length()) {
                 // only update the text if anything was filtered out
                 chg.setText(onlyDigits.toString());
             }
         }
-        if (chg.getControlNewText().length() > MAX_YEAR_LEN) {
+        String newText = chg.getControlNewText();
+        if (newText.isEmpty()) {
+            chg.setText("0");
+        } else if (newText.length() > MAX_YEAR_LEN) {
             // reject changes that would put the text length over the maximum
             return null;
         }
