@@ -116,9 +116,9 @@ public class CalendarView extends Application implements Observer {
                         int clickedX = GridPane.getColumnIndex(node);
                         int day = getDayOnClick(clickedY, clickedX);
                         if (day > 0) {
-                            Optional<CalendarEvent> newEvent =
-                                    EventDialog.newEventAt(currentView.withDayOfMonth(day)).showAndWait();
-                            newEvent.ifPresent(calendarEvent -> model.addEvent(calendarEvent));
+                            EventDialog.newEventAt(currentView.withDayOfMonth(day)).showAndWait()
+                                    // add the event if it was created
+                                    .ifPresent(model::addEvent);
                         }
                     }
                 }
@@ -177,15 +177,16 @@ public class CalendarView extends Application implements Observer {
 
                 beg = beg.plusDays(1);
 
-                t.getChildren().removeIf(n -> n instanceof Button);
+                t.getChildren().removeIf(Button.class::isInstance);
                 CalendarEvent[] events = model.getEventsInDay(beg);
                 for (CalendarEvent event : events) {
                     Button button = new Button(event.getTitle());
                     t.getChildren().add(button);
-                    button.setOnMouseClicked(butt -> {
-                        Optional<CalendarEvent> editEvent = EventDialog.editEvent(event).showAndWait();
-                        editEvent.ifPresent(calendarEvent -> model.markModified(event));
-                    });
+                    button.setOnMouseClicked(butt ->
+                            EventDialog.editEvent(event).showAndWait()
+                                    // mark the event as modified it it was edited
+                                    .ifPresent(model::markModified)
+                    );
                 }
             }
         }
