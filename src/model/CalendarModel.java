@@ -86,8 +86,11 @@ public class CalendarModel extends Observable implements Serializable  {
      */
     public CalendarEvent[] getEventsInRange(LocalDateTime before, LocalDateTime after) {
         return events.parallelStream()
-                .filter(event -> isDateInRange(event.getDate(), before, after))
-                .toArray(CalendarEvent[]::new);
+                .filter(event -> isDateInRange(
+                        // LocalDateTime at which the event starts
+                        event.getDate().atTime(event.getStartTime()),
+                        before, after)
+                ).toArray(CalendarEvent[]::new);
     }
 
     /**

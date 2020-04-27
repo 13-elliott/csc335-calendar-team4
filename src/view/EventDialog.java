@@ -10,7 +10,6 @@ import javafx.scene.layout.VBox;
 import model.CalendarEvent;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -36,7 +35,7 @@ public class EventDialog extends Dialog<CalendarEvent> {
             daySelector, monthSelector,
             startHourSelector, startMinuteSelector,
             endHourSelector, endMinuteSelector;
-    private LocalDateTime date;
+    private LocalDate date;
     private LocalTime start, end;
 
     /**
@@ -64,14 +63,13 @@ public class EventDialog extends Dialog<CalendarEvent> {
             end = event.getEndTime();
         } else if (seed instanceof LocalDate) {
             event = null;
-            LocalDate d = (LocalDate) seed;
-            date = LocalDateTime.of(d, LocalTime.now());
+            date = (LocalDate) seed;
             start = LocalTime.now();
             end = LocalTime.now();
         } else {
             // initial values will be current date+time
             event = null;
-            date = LocalDateTime.now();
+            date = LocalDate.now();
             start = LocalTime.now();
             end = LocalTime.now();
         }
@@ -307,7 +305,7 @@ public class EventDialog extends Dialog<CalendarEvent> {
         monthSelector.getSelectionModel().selectedIndexProperty()
                 .addListener((a, b, newVal) -> {
                     updateNumDaysInMonth();
-                    date = date.withMonth(newVal.intValue());
+                    date = date.withMonth(newVal.intValue() + 1);
                 });
         daySelector.getSelectionModel().selectedIndexProperty().addListener(
                 (a, b, newVal) -> date = date.withDayOfMonth(newVal.intValue())
@@ -334,11 +332,11 @@ public class EventDialog extends Dialog<CalendarEvent> {
      */
     private void updateNumDaysInMonth() {
         // change range of available day choices based on selected month
-        int year = yearField.getText().isEmpty() ?
-                // if yearField is empty, fall back onto the date Calendar object
-                date.getYear() : Integer.parseInt(yearField.getText());
-        LocalDate temp = LocalDate.of(year, monthSelector.getSelectionModel().getSelectedIndex(), 1);
-        final int numDays = temp.getMonth().length(temp.isLeapYear());
+        final int numDays = LocalDate.of(
+                Integer.parseInt(yearField.getText()),
+                monthSelector.getSelectionModel().getSelectedIndex() + 1,
+                1 // we only care about the year and month
+                ).lengthOfMonth();
         final int selected = daySelector.getSelectionModel().getSelectedIndex();
         List<String> selectorList = daySelector.getItems();
         final int diff = selectorList.size() - numDays;

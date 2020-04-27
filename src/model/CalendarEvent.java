@@ -1,21 +1,21 @@
 package model;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Date;
 
 public class CalendarEvent implements Serializable {
 
     private static final long serialVersionUID = -3059578212481803086L;
     private String title;
-    private LocalDateTime date;
+    private LocalDate date;
     private LocalTime startTime;
     private LocalTime endTime;
     private String location;
     private String notes;
 
-    public CalendarEvent(String title, LocalDateTime date, LocalTime startTime, LocalTime endTime, String location, String notes) {
+    public CalendarEvent(String title, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
         this.title = title;
         this.date = date;
         this.startTime = startTime;
@@ -26,14 +26,16 @@ public class CalendarEvent implements Serializable {
 
     public CalendarEvent(String title, LocalDateTime date) {
         this.title = title;
-        this.date = date;
+        this.date = date.toLocalDate();
+        this.startTime = date.toLocalTime();
+        this.endTime = date.toLocalTime();
     }
 
     public String getTitle() {
         return title;
     }
 
-    public LocalDateTime getDate() {
+    public LocalDate getDate() {
         return date;
     }
 
@@ -57,7 +59,7 @@ public class CalendarEvent implements Serializable {
         this.title = title;
     }
 
-    public void setDate(LocalDateTime date) {
+    public void setDate(LocalDate date) {
         this.date = date;
     }
 
