@@ -90,6 +90,11 @@ public class EventDialog extends Dialog<CalendarEvent> {
                         new Alert(Alert.AlertType.ERROR, "Neither Title nor Year may be blank")
                                 .showAndWait();
                     }
+                    if (end.before(start)) {
+                        e.consume();
+                        new Alert(Alert.AlertType.ERROR, "End Time must not be before Start Time")
+                                .showAndWait();
+                    }
                 });
         constructGUI();
     }
