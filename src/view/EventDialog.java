@@ -285,7 +285,7 @@ public class EventDialog extends Dialog<CalendarEvent> {
                 endHourSelector.getItems().add(formatted);
             }
             if (1 <= i) {
-                if (i < 12) // month
+                if (i <= 12) // month
                     monthSelector.getItems().add(unformatted);
                 if (i <= numDays) // day
                     daySelector.getItems().add(unformatted);
