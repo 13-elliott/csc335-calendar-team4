@@ -2,11 +2,18 @@ package controller;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
+/**
+ * 
+ * @author mollyopheim
+ *
+ */
 public class CalendarController {
 	
 	private List<CalendarEvent> events = new ArrayList<CalendarEvent>();
+	private HashMap<String, CalendarModel> map = new HashMap<>();
 	
 	
 	/**
@@ -33,6 +40,24 @@ public class CalendarController {
 	}
 	
 	/**
+	 * A getter for the array list of calendar events!
+	 * 
+	 * @return the list of CalendarEvent's
+	 */
+	public ArrayList<CalendarEvent> getEvents() {
+		return events;
+	}
+	
+	/**
+	 * This method adds a CalendarEvent to the events ArrayList
+	 * 
+	 * @param newEvent -- the event to be added to the event list
+	 */
+	public void addExistingEvent(CalendarEvent newEvent) {
+		events.add(newEvent);
+	}
+	
+	/**
 	 * Ensures that the end date is after the start date
 	 * @param start -- the start date of the event
 	 * @param end -- the end date
@@ -44,9 +69,26 @@ public class CalendarController {
 		return true;
 	}
 	
+	/**
+	 * This method adds a new CalendarModel object to the map
+	 * of CalendarModel's
+	 * 
+	 * @param newModel -- the new CalendarModel object
+	 * @param name -- the name of the new CalendarModel
+	 */
+	public void addCalendarModel(CalendarModel newModel, String name) {
+		map.put(name, newModel);
+	}
 	
-	
-	
-	
-	
+	/**
+	 * Getter for a CalendarModel object in the CalendarModel map
+	 * 
+	 * @param name -- the String associated with the CalendarModel to
+	 * get from the CalendarModel map
+	 * @return the CalendarModel object found, null if no CalendarModel
+	 * is found with the name
+	 */
+	public CalendarModel getCalendarModel(String name) {
+		return map.get(name);
+	}
 }
