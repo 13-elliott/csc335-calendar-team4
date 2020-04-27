@@ -1,16 +1,13 @@
 package model;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * A representation of a calendar of events
  * @author Jessica Coan
  */
-public class CalendarModel implements Serializable {
+public class CalendarModel extends Observable implements Serializable  {
     private static final long serialVersionUID = 5184911405741555741L;
     private List<CalendarEvent> events = new ArrayList<>();
 
@@ -97,6 +94,8 @@ public class CalendarModel implements Serializable {
      */
     public void addEvent(CalendarEvent event) {
         events.add(event);
+        setChanged();
+        notifyObservers(event);
     }
 
     /**
@@ -105,6 +104,17 @@ public class CalendarModel implements Serializable {
      */
     public void removeEvent(CalendarEvent event) {
         events.remove(event);
+        setChanged();
+        notifyObservers();
+    }
+
+    /**
+     * Mark that an event in this model has been modified, so Observers can be updated accordingly
+     * @param event event that has been modified
+     */
+    public void markModified(CalendarEvent event) {
+        setChanged();
+        notifyObservers(event);
     }
 
     /**
