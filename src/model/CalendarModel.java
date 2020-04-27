@@ -19,8 +19,8 @@ public class CalendarModel extends Observable implements Serializable  {
      * @return an array with all the events in that year
      */
     public CalendarEvent[] getEventsInYear(int year) {
-        LocalDateTime before = getDateTime(year, 1, 1);
-        LocalDateTime after = getDateTime(year, 1, 1);
+        LocalDateTime before = getDateTime(year, 1, 1).minusSeconds(1);
+        LocalDateTime after = getDateTime(year, 1, 1).plusYears(1);
 
         return getEventsInRange(before, after);
     }
@@ -32,8 +32,8 @@ public class CalendarModel extends Observable implements Serializable  {
      * @return an array of events in that month
      */
     public CalendarEvent[] getEventsInMonth(int year, int month) {
-        LocalDateTime before = getDateTime(year, month, 1);
-        LocalDateTime after = getDateTime(year, month, 1);
+        LocalDateTime before = getDateTime(year, month, 1).minusSeconds(1);
+        LocalDateTime after = getDateTime(year, month, 1).plusMonths(1);
 
         return getEventsInRange(before, after);
     }
@@ -47,8 +47,8 @@ public class CalendarModel extends Observable implements Serializable  {
      * @return an array of all the events on that day
      */
     public CalendarEvent[] getEventsInDay(int year, int month, int day) {
-        LocalDateTime before = getDateTime(year, month, day);
-        LocalDateTime after = getDateTime(year, month, day);
+        LocalDateTime before = getDateTime(year, month, day).minusSeconds(1);
+        LocalDateTime after = getDateTime(year, month, day).plusDays(1);
 
         return getEventsInRange(before, after);
     }
@@ -67,14 +67,14 @@ public class CalendarModel extends Observable implements Serializable  {
      * @return an array of all the events that occur in that hour
      */
     public CalendarEvent[] getEventsInHour(int year, int month, int day, int hour) {
-        LocalDateTime before = getDateTime(year, month, day, hour, 0);
-        LocalDateTime after = getDateTime(year, month, day, hour, 0);
+        LocalDateTime before = getDateTime(year, month, day, hour, 0).minusSeconds(1);
+        LocalDateTime after = getDateTime(year, month, day, hour, 0).plusHours(1);
 
         return getEventsInRange(before, after);
     }
 
     public CalendarEvent[] getEventsInHour(LocalDateTime time) {
-        return getEventsInHour(time.getYear(), time.getMonthValue(), time.getHour(), time.getHour());
+        return getEventsInHour(time.getYear(), time.getMonthValue(), time.getDayOfMonth(), time.getHour());
     }
 
     /**
@@ -88,8 +88,8 @@ public class CalendarModel extends Observable implements Serializable  {
                 .filter(event -> isDateInRange(
                         // LocalDateTime at which the event starts
                         event.getDate().atTime(event.getStartTime()),
-                        before, after)
-                ).toArray(CalendarEvent[]::new);
+                        before, after))
+                .toArray(CalendarEvent[]::new);
     }
 
     /**
