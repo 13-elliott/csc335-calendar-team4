@@ -218,35 +218,54 @@ public class EventDialog extends Dialog<CalendarEvent> {
      * initialize values for time-related graphical elements
      */
     private void setupTimeElements() {
+        final int numDays = date.getActualMaximum(Calendar.DAY_OF_MONTH);
         for (int i = 0; i < 60; i++) {
             String formatted = String.format("%02d", i);
+            String unformatted = String.valueOf(i);
             if (i < 24) {  // hour
                 startHourSelector.getItems().add(formatted);
                 endHourSelector.getItems().add(formatted);
-                if (1 <= i && i <= 12) { // month
-                    monthSelector.getItems().add(String.valueOf(i));
-                }
+            }
+            if (1 <= i) {
+                if (i < 12) // month
+                    monthSelector.getItems().add(unformatted);
+                if (i <= numDays) // day
+                    daySelector.getItems().add(unformatted);
             }
             // minute
             startMinuteSelector.getItems().add(formatted);
             endMinuteSelector.getItems().add(formatted);
         }
 
-        monthSelector.getSelectionModel().selectedItemProperty().addListener(
-                (a, b, c) -> updateNumDaysInMonth()
-        );
-        yearField.textProperty().addListener(
-                (a, b, c) -> updateNumDaysInMonth()
-        );
         yearField.setText(String.valueOf(date.get(Calendar.YEAR)));
         monthSelector.getSelectionModel().select(date.get(Calendar.MONTH));
-        daySelector.getSelectionModel().select(date.get(Calendar.DAY_OF_MONTH));
+        daySelector.getSelectionModel().select(date.get(Calendar.DAY_OF_MONTH) - 1);
+        yearField.textProperty().addListener((a, b, newVal) -> {
+            updateNumDaysInMonth();
+            date.set(Calendar.YEAR, Integer.parseInt(newVal));
+        });
+        monthSelector.getSelectionModel().selectedIndexProperty()
+                .addListener((a, b, newVal) -> {
+                    updateNumDaysInMonth();
+                    date.set(Calendar.MONTH, newVal.intValue());
+                });
+        daySelector.getSelectionModel().selectedIndexProperty().addListener(
+                (a, b, newVal) -> date.set(Calendar.DAY_OF_MONTH, newVal.intValue() + 1)
+        );
 
         startHourSelector.getSelectionModel().select(start.get(Calendar.HOUR_OF_DAY));
         startMinuteSelector.getSelectionModel().select(start.get(Calendar.MINUTE));
+        startHourSelector.getSelectionModel().selectedIndexProperty()
+                .addListener((a, b, newVal) -> start.set(Calendar.HOUR_OF_DAY, newVal.intValue()));
+        startMinuteSelector.getSelectionModel().selectedIndexProperty()
+                .addListener((a, b, newVal) -> start.set(Calendar.MINUTE, newVal.intValue()));
 
         endHourSelector.getSelectionModel().select(end.get(Calendar.HOUR_OF_DAY));
         endMinuteSelector.getSelectionModel().select(end.get(Calendar.MINUTE));
+        endHourSelector.getSelectionModel().selectedIndexProperty()
+                .addListener((a, b, newVal) -> end.set(Calendar.HOUR_OF_DAY, newVal.intValue()));
+        endMinuteSelector.getSelectionModel().selectedIndexProperty()
+                .addListener((a, b, newVal) -> end.set(Calendar.MINUTE, newVal.intValue()));
     }
 
     /**
@@ -263,6 +282,7 @@ public class EventDialog extends Dialog<CalendarEvent> {
         tempCal.set(Calendar.YEAR, year);
 
         final int numDays = tempCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+        final int selected = daySelector.getSelectionModel().getSelectedIndex() + 1; // account for zero-index
         List<String> selectorList = daySelector.getItems();
         final int diff = selectorList.size() - numDays;
         if (diff > 0) {
@@ -275,11 +295,10 @@ public class EventDialog extends Dialog<CalendarEvent> {
                 // append the missing days
                 selectorList.add(String.valueOf(i));
             }
-        } else {
-            return;
         }
-        // if changed, reset selected day to the first
-        daySelector.setValue("1");
+        if (selected > numDays) {
+            daySelector.getSelectionModel().selectFirst();
+        }
     }
 
     /**
