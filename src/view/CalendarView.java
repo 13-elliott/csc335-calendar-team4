@@ -141,8 +141,9 @@ public class CalendarView extends Application implements java.util.Observer{
                     if(node.getBoundsInParent().contains(event.getX(), event.getY())) {
                         System.out.println(GridPane.getRowIndex(node));
                         System.out.println(GridPane.getColumnIndex(node));
-                        //clickedX = GridPane.getRowIndex(node);
-                        //clickedY = GridPane.getColumnIndex(node);
+                        int clickedY = GridPane.getRowIndex(node);
+                        int clickedX = GridPane.getColumnIndex(node);
+                        System.out.println(getDayOnClick(clickedY,clickedX));
                     }
                 }
 			}
@@ -278,6 +279,28 @@ public class CalendarView extends Application implements java.util.Observer{
     		for(int j = 0; j < 7; j++) {
     			
     		}
+    	}
+    }
+    
+    /** This method returns the day the user clicks on
+	 * 
+	 * This method, when given a row and column that 
+	 * the user has clicked on, will return the int of
+	 * the day that was clicked. If the user clicks on 
+	 * a box that isn't a day, it returns -1.
+	 * 
+	 * @param int, the row clicked on
+	 * @param int, the column clicked on
+	 * @return int, the day clicked on or -1.
+	 */
+    public int getDayOnClick(int row, int col) {
+    	TilePane t = panes.get(row*7 + col);
+    	String dayClicked = ((Label)t.getChildren().get(0)).getText();
+    	if(dayClicked.equals("")) {
+    		return -1;
+    	}
+    	else {
+    		return Integer.parseInt(dayClicked);
     	}
     }
 }
