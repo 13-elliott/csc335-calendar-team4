@@ -10,6 +10,7 @@ import javafx.scene.layout.VBox;
 import model.CalendarEvent;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -37,28 +38,40 @@ public class EventDialog extends Dialog<CalendarEvent> {
     private final Calendar date, start, end;
 
     /**
-     * create a new EventDialog which could produce a new CalendarEvent
-     */
-    public EventDialog() {
-        this(null);
-    }
-
-    /**
-     * create a new EventDialog which could edit the given CalendarEvent
+     * Constructor.
+     * If given a CalendarEvent object, then that event will be loaded, and
+     * will be updated with the information the user inputs into this EventDialog
+     * if the user clicks OK. This can be determined if the return value of
+     * {@link super#showAndWait()} {@link java.util.Optional#isPresent() is present}.
+     * <p>
+     * If given a Date object, the initial date and start/end times
+     * will be derived from that Date, and {@link super#showAndWait()}
+     * will {@link java.util.Optional optionally} return a new CalendarEvent.
+     * If given null, then the current date and time will be used to set the
+     * initial values.
      *
-     * @param event the event to be edited.
+     * @param seed either a {@link CalendarEvent}, {@link Date}, or null
      */
-    public EventDialog(CalendarEvent event) {
+    private EventDialog(Object seed) {
         super();
-        this.event = event;
 
         date = Calendar.getInstance();
         start = Calendar.getInstance();
         end = Calendar.getInstance();
-        if (event != null) {
+        if (seed instanceof CalendarEvent) {
+            event = (CalendarEvent) seed;
             date.setTime(event.getDate());
             start.setTime(event.getStartTime());
             end.setTime(event.getEndTime());
+        } else if (seed instanceof Date) {
+            event = null;
+            Date d = (Date) seed;
+            date.setTime(d);
+            start.setTime(d);
+            end.setTime(d);
+        } else {
+            // initial values will be current date+time
+            event = null;
         }
 
         titleEntryField = new TextField();
@@ -97,6 +110,42 @@ public class EventDialog extends Dialog<CalendarEvent> {
                     }
                 });
         constructGUI();
+    }
+
+    /**
+     * Create a new instance of this class to edit the given event.
+     *
+     * @param event the event to be edited. must not be null.
+     * @return the EventDialog object which will edit the event when
+     * called via the blocking {@link super#showAndWait()} method
+     * @throws IllegalArgumentException if event is null.
+     */
+    public static EventDialog editEvent(CalendarEvent event) {
+        if (event == null)
+            throw new IllegalArgumentException("CalendarEvent to be edited must not be null");
+        return new EventDialog(event);
+    }
+
+    /**
+     * create a new instance of this class to create a new CalendarEvent.
+     *
+     * @return the EventDialog object which {@link java.util.Optional could} return
+     * the new event when called via the blocking {@link super#showAndWait()} method.
+     */
+    public static EventDialog newEvent() {
+        return new EventDialog(null);
+    }
+
+    /**
+     * create a new instance of this class to create a new CalendarEvent.
+     *
+     * @param dateTime the date and time from which the initial date and time values
+     *                 of the EventDialog will be derived.
+     * @return the EventDialog object which {@link java.util.Optional could} return
+     * the new event when called via the blocking {@link super#showAndWait()} method.
+     */
+    public static EventDialog newEventAt(Date dateTime) {
+        return new EventDialog(dateTime);
     }
 
     /**
