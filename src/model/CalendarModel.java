@@ -27,7 +27,6 @@ public class CalendarModel extends Observable implements Serializable  {
 
     /**
      * Gets all the events in a month and year
-     * NOTE: Month numbering in Java Calendar starts at 0.
      * @param year year of month
      * @param month month to get events from
      * @return an array of events in that month
