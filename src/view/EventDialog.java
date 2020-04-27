@@ -276,7 +276,7 @@ public class EventDialog extends Dialog<CalendarEvent> {
      * initialize values for time-related graphical elements
      */
     private void setupTimeElements() {
-        final int numDays = date.getMonth().length(LocalDate.from(date).isLeapYear());
+        final int numDays = date.lengthOfMonth();
         for (int i = 0; i < 60; i++) {
             String formatted = String.format("%02d", i);
             String unformatted = String.valueOf(i);
@@ -296,8 +296,9 @@ public class EventDialog extends Dialog<CalendarEvent> {
         }
 
         yearField.setText(String.valueOf(date.getYear()));
+        // - 1 to account for SelectionModel being zero-indexed
         monthSelector.getSelectionModel().select(date.getMonthValue() - 1);
-        daySelector.getSelectionModel().select(date.getDayOfMonth());
+        daySelector.getSelectionModel().select(date.getDayOfMonth() - 1);
         yearField.textProperty().addListener((a, b, newVal) -> {
             updateNumDaysInMonth();
             date = date.withYear(Integer.parseInt(newVal));
@@ -305,10 +306,12 @@ public class EventDialog extends Dialog<CalendarEvent> {
         monthSelector.getSelectionModel().selectedIndexProperty()
                 .addListener((a, b, newVal) -> {
                     updateNumDaysInMonth();
+                    // + 1 to account for SelectionModel being zero-indexed
                     date = date.withMonth(newVal.intValue() + 1);
                 });
         daySelector.getSelectionModel().selectedIndexProperty().addListener(
-                (a, b, newVal) -> date = date.withDayOfMonth(newVal.intValue())
+                // + 1 to account for SelectionModel being zero-indexed
+                (a, b, newVal) -> date = date.withDayOfMonth(newVal.intValue() + 1)
         );
 
         startHourSelector.getSelectionModel().select(start.getHour());
@@ -334,10 +337,13 @@ public class EventDialog extends Dialog<CalendarEvent> {
         // change range of available day choices based on selected month
         final int numDays = LocalDate.of(
                 Integer.parseInt(yearField.getText()),
-                monthSelector.getSelectionModel().getSelectedIndex(),
+                // account for zero-indexed selection model
+                monthSelector.getSelectionModel().getSelectedIndex() + 1,
                 1 // we only care about the year and month
         ).lengthOfMonth();
-        final int selected = daySelector.getSelectionModel().getSelectedIndex();
+        if (daySelector.getSelectionModel().getSelectedIndex() >= numDays) {
+            daySelector.getSelectionModel().selectFirst();
+        }
         List<String> selectorList = daySelector.getItems();
         final int diff = selectorList.size() - numDays;
         if (diff > 0) {
@@ -350,9 +356,6 @@ public class EventDialog extends Dialog<CalendarEvent> {
                 // append the missing days
                 selectorList.add(String.valueOf(i));
             }
-        }
-        if (selected > numDays) {
-            daySelector.getSelectionModel().selectFirst();
         }
     }
 

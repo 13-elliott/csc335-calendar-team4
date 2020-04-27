@@ -117,7 +117,7 @@ public class CalendarView extends Application implements Observer {
                         int day = getDayOnClick(clickedY, clickedX);
                         if (day > 0) {
                             Optional<CalendarEvent> newEvent =
-                                    EventDialog.newEventAt(currentView.withDayOfMonth(day - 1)).showAndWait();
+                                    EventDialog.newEventAt(currentView.withDayOfMonth(day)).showAndWait();
                             newEvent.ifPresent(calendarEvent -> model.addEvent(calendarEvent));
                         }
                     }
