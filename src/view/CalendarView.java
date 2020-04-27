@@ -1,7 +1,5 @@
 package view;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Observable;
+
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -9,15 +7,16 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.TilePane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import model.CalendarEvent;
 import model.CalendarModel;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Observable;
+import java.util.Optional;
 
 public class CalendarView extends Application implements java.util.Observer{
 	private String[] months;
@@ -139,12 +138,14 @@ public class CalendarView extends Application implements java.util.Observer{
 			for(Node node: grid.getChildren()) {
                 if(node instanceof TilePane) {
                     if(node.getBoundsInParent().contains(event.getX(), event.getY())) {
-                        System.out.println(GridPane.getRowIndex(node));
-                        System.out.println(GridPane.getColumnIndex(node));
-                        int clickedY = GridPane.getRowIndex(node);
-                        int clickedX = GridPane.getColumnIndex(node);
-                        System.out.println(getDayOnClick(clickedY,clickedX));
-                    }
+						int clickedY = GridPane.getRowIndex(node);
+						int clickedX = GridPane.getColumnIndex(node);
+						int day = getDayOnClick(clickedY, clickedX);
+						if (day >= 0) {
+							Optional<CalendarEvent> newEvent =
+									EventDialog.newEventAt(new Date(year - 1900, month, day)).showAndWait();
+						}
+					}
                 }
 			}
 		});
