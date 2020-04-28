@@ -19,5 +19,11 @@ public interface CalendarViewMode {
      *
      * @param date a point in time which this
      */
-    void changeDate(LocalDate date);
+    void setDate(LocalDate date);
+
+    /**
+     * get the first date within the range of time being shown
+     * @return the first date within the range of time being shown
+     */
+    LocalDate getDate();
 }

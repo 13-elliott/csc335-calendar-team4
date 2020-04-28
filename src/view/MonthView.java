@@ -227,7 +227,12 @@ public class MonthView implements CalendarViewMode {
     }
 
     @Override
-    public void changeDate(LocalDate d) {
+    public LocalDate getDate() {
+        return currentView.withDayOfMonth(1);
+    }
+
+    @Override
+    public void setDate(LocalDate d) {
         currentView = d;
         drawMonth();
     }
