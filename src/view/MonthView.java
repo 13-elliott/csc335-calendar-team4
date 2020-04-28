@@ -15,12 +15,15 @@ import model.CalendarModel;
 
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Locale;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.function.Supplier;
 
-public class CalendarView extends Application implements Observer {
+public class MonthView extends Application implements Supplier<Node>, Observer {
     private LocalDate currentView;
     private GridPane grid;
-    private Scene scene;
     private CalendarModel model;
     private ArrayList<TilePane> panes;
     private Label title;
@@ -116,9 +119,16 @@ public class CalendarView extends Application implements Observer {
                         int clickedX = GridPane.getColumnIndex(node);
                         int day = getDayOnClick(clickedY, clickedX);
                         if (day > 0) {
-                            EventDialog.newEventAt(currentView.withDayOfMonth(day)).showAndWait()
-                                    // add the event if it was created
-                                    .ifPresent(model::addEvent);
+                            // TODO
+//                            EventDialog.newEventAt(
+//                                    currentView.withDayOfMonth(day),
+//                                    controller.getCalendarNames()
+//                            ).showAndWait()
+//                                    // add the event if it was created
+//                                    .ifPresent(pair -> controller.addEvent(
+//                                            pair.getValue(),
+//                                            pair.getKey()
+//                                    ));
                         }
                     }
                 }
@@ -140,7 +150,7 @@ public class CalendarView extends Application implements Observer {
 
         b.setTop(vbox);
         b.setCenter(grid);
-        scene = new Scene(b);
+        Scene scene = new Scene(b);
 
         // Set up main stage
         calendarStage.setTitle("Calender");
@@ -182,11 +192,21 @@ public class CalendarView extends Application implements Observer {
                 for (CalendarEvent event : events) {
                     Button button = new Button(event.getTitle());
                     t.getChildren().add(button);
-                    button.setOnMouseClicked(butt ->
-                            EventDialog.editEvent(event).showAndWait()
-                                    // mark the event as modified it it was edited
-                                    .ifPresent(model::markModified)
-                    );
+                    // TODO
+//                    button.setOnMouseClicked(butt ->
+//                            EventDialog.editEvent(
+//                                    event,
+//                                    currentCalendarName,
+//                                    controller.getCalendarNames()
+//                            ).showAndWait().ifPresent(pair ->
+//                                    controller.moveEvent(
+//                                            // event to move
+//                                            pair.getValue(),
+//                                            // calendar name to move it to
+//                                            pair.getKey()
+//                                    )
+//                            )
+//                    );
                 }
             }
         }
@@ -227,5 +247,11 @@ public class CalendarView extends Application implements Observer {
         } else {
             return Integer.parseInt(dayClicked);
         }
+    }
+
+    @Override
+    public Node get() {
+        // TODO
+        return null;
     }
 }
