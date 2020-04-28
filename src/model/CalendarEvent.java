@@ -28,7 +28,6 @@ public class CalendarEvent implements Serializable {
         this.title = title;
         this.date = date.toLocalDate();
         this.startTime = date.toLocalTime();
-        this.endTime = date.toLocalTime();
     }
 
     public String getTitle() {

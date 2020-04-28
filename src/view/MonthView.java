@@ -13,6 +13,7 @@ import model.CalendarModel;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class MonthView implements CalendarViewMode {
@@ -20,7 +21,7 @@ public class MonthView implements CalendarViewMode {
     private LocalDate currentView;
     private GridPane grid;
     private CalendarModel model;
-    private ArrayList<TilePane> panes;
+    private List<TilePane> panes;
     private Label title;
 
     /**
@@ -50,10 +51,10 @@ public class MonthView implements CalendarViewMode {
         // initialize buttons
         Button forward = new Button("->");
         Button backward = new Button("<-");
+        Region filler = new Region();
+        HBox.setHgrow(filler, Priority.ALWAYS);
         HBox hbox = new HBox();
-        hbox.getChildren().add(backward);
-        hbox.getChildren().add(forward);
-        hbox.setSpacing(492);
+        hbox.getChildren().addAll(backward, filler, forward);
 
         // vBox to help layout
         VBox vbox = new VBox();
@@ -228,7 +229,7 @@ public class MonthView implements CalendarViewMode {
 
     @Override
     public LocalDate getDate() {
-        return currentView.withDayOfMonth(1);
+        return currentView;
     }
 
     @Override
