@@ -1,15 +1,12 @@
 package view;
 
-import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
-import javafx.stage.Stage;
 import model.CalendarEvent;
 import model.CalendarModel;
 
@@ -17,11 +14,9 @@ import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Locale;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.function.Supplier;
 
-public class MonthView extends Application implements Supplier<Node>, Observer {
+public class MonthView implements CalendarViewMode {
+    private BorderPane b;
     private LocalDate currentView;
     private GridPane grid;
     private CalendarModel model;
@@ -29,33 +24,16 @@ public class MonthView extends Application implements Supplier<Node>, Observer {
     private Label title;
 
     /**
-     * Overridden Update method from observable
-     * This method is called when the model is changed
-     *
-     * @param o   an observable object
-     * @param arg the model object
-     */
-    @Override
-    // This will Change depending on view later on
-    public void update(Observable o, Object arg) {
-        drawMonth();
-    }
-
-    /**
      * The start method overridden from Application
      * This method is called when the Calendar class
      * calls it's launch method. This is the main
      * method of the program and holds all of the
      * initialization of the GUI and it's event handelers.
-     *
-     * @param calendarStage the main stage of the program.
      */
-    @Override
-    public void start(Stage calendarStage) {
+    public MonthView() {
         // Initialize current day and lists to help with construction
         currentView = LocalDate.now();
         model = new CalendarModel();
-        model.addObserver(this);
 
         // Label on Calendar with all the weekdays as well as month/year label
         GridPane dayNames = new GridPane();
@@ -92,7 +70,7 @@ public class MonthView extends Application implements Supplier<Node>, Observer {
         panes = new ArrayList<>();
 
         // Create borderpane
-        BorderPane b = new BorderPane();
+        b = new BorderPane();
 
         // Initialize board with panes
         for (int i = 0; i < 6; i++) {
@@ -150,12 +128,6 @@ public class MonthView extends Application implements Supplier<Node>, Observer {
 
         b.setTop(vbox);
         b.setCenter(grid);
-        Scene scene = new Scene(b);
-
-        // Set up main stage
-        calendarStage.setTitle("Calender");
-        calendarStage.setScene(scene);
-        calendarStage.show();
     }
 
     /**
@@ -250,8 +222,13 @@ public class MonthView extends Application implements Supplier<Node>, Observer {
     }
 
     @Override
-    public Node get() {
-        // TODO
-        return null;
+    public Node getNode() {
+        return b;
+    }
+
+    @Override
+    public void changeDate(LocalDate d) {
+        currentView = d;
+        drawMonth();
     }
 }

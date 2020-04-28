@@ -2,11 +2,17 @@ package view;
 
 import javafx.scene.Node;
 
-import java.util.function.Supplier;
+import java.time.LocalDate;
 
-public class DayView implements Supplier<Node> {
+public class DayView implements CalendarViewMode {
+
     @Override
-    public Node get() {
+    public Node getNode() {
         return null;
+    }
+
+    @Override
+    public void changeDate(LocalDate date) {
+
     }
 }
