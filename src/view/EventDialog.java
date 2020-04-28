@@ -7,11 +7,13 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.util.Pair;
 import model.CalendarEvent;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Set;
 
 /**
  * a modal dialog which can produce new or edit existing CalendarEvent objects
@@ -22,7 +24,7 @@ import java.util.List;
  *
  * @author Kitty Elliott
  */
-public class EventDialog extends Dialog<CalendarEvent> {
+public class EventDialog extends Dialog<Pair<String, CalendarEvent>> {
 
     private static final int
             MAX_YEAR_LEN = 4,
@@ -34,7 +36,8 @@ public class EventDialog extends Dialog<CalendarEvent> {
     private final ChoiceBox<String>
             daySelector, monthSelector,
             startHourSelector, startMinuteSelector,
-            endHourSelector, endMinuteSelector;
+            endHourSelector, endMinuteSelector,
+            calendarSelector;
     private LocalDate date;
     private LocalTime start, end;
 
@@ -43,17 +46,25 @@ public class EventDialog extends Dialog<CalendarEvent> {
      * If given a CalendarEvent object, then that event will be loaded, and
      * will be updated with the information the user inputs into this EventDialog
      * if the user clicks OK. This can be determined if the return value of
-     * {@link super#showAndWait()} {@link java.util.Optional#isPresent() is present}.
+     * {@link #showAndWait()} {@link java.util.Optional#isPresent() is present}.
      * <p>
      * If given a Date object, the initial date and start/end times
-     * will be derived from that Date, and {@link super#showAndWait()}
-     * will {@link java.util.Optional optionally} return a new CalendarEvent.
+     * will be derived from that Date, and {@link #showAndWait()}
+     * will {@link java.util.Optional optionally} return a {@link Pair}
+     * with the name of the selected calendar as its key and the CalendarEvent
+     * as its value.
      * If given null, then the current date and time will be used to set the
      * initial values.
      *
-     * @param seed either a {@link CalendarEvent}, {@link LocalDate}, or null
+     * @param seed              either a {@link CalendarEvent}, {@link LocalDate}, or null
+     * @param selectedCalendar  the name of a calendar which will be the initial selection.
+     *                          Must be a member of possibleCalendars, or else null, in which
+     *                          case the first name from the sorted members of possibleCalendars
+     *                          will be the initial calendar selection.
+     * @param possibleCalendars a set of calendar names to choose from.
+     * @see #getResult(ButtonType)
      */
-    private EventDialog(Object seed) {
+    private EventDialog(Object seed, String selectedCalendar, Set<String> possibleCalendars) {
         super();
 
         if (seed instanceof CalendarEvent) {
@@ -89,6 +100,15 @@ public class EventDialog extends Dialog<CalendarEvent> {
         endHourSelector = new ChoiceBox<>();
         endMinuteSelector = new ChoiceBox<>();
 
+        calendarSelector = new ChoiceBox<>();
+        possibleCalendars.stream().sorted()
+                .forEachOrdered(calendarSelector.getItems()::add);
+        if (selectedCalendar == null) {
+            calendarSelector.getSelectionModel().selectFirst();
+        } else {
+            calendarSelector.getSelectionModel().select(selectedCalendar);
+        }
+
         setupTimeElements();
         fillNonTimeElements();
         this.setResultConverter(this::getResult);
@@ -115,37 +135,60 @@ public class EventDialog extends Dialog<CalendarEvent> {
     /**
      * Create a new instance of this class to edit the given event.
      *
-     * @param event the event to be edited. must not be null.
+     * @param event             the event to be edited. must not be null.
+     * @param selectedCalendar  the name of the calendar the given event belongs to
+     * @param possibleCalendars a set of calendar names that the event could belong to
      * @return the EventDialog object which will edit the event when
-     * called via the blocking {@link super#showAndWait()} method
-     * @throws IllegalArgumentException if event is null.
+     * called via the blocking {@link #showAndWait()} method
+     * @throws IllegalArgumentException if any argument is null,
+     *                                  or selectedCalendar is not a member of possibleCalendars
      */
-    public static EventDialog editEvent(CalendarEvent event) {
-        if (event == null)
-            throw new IllegalArgumentException("CalendarEvent to be edited must not be null");
-        return new EventDialog(event);
+    public static EventDialog editEvent(
+            CalendarEvent event,
+            String selectedCalendar,
+            Set<String> possibleCalendars) {
+        final String message;
+        if (event == null) {
+            message = "CalendarEvent to be edited must not be null";
+        } else if (selectedCalendar == null) {
+            message = "selectedCalendar must not be null";
+        } else if (possibleCalendars == null || possibleCalendars.isEmpty()) {
+            message = "The set of possible calendars must not be null or empty";
+        } else if (!possibleCalendars.contains(selectedCalendar)) {
+            message = String.format(
+                    "Given a calendar name which was not in the set of possible calendars: %s",
+                    selectedCalendar);
+        } else {
+            return new EventDialog(event, selectedCalendar, possibleCalendars);
+        }
+        throw new IllegalArgumentException(message);
     }
 
     /**
      * create a new instance of this class to create a new CalendarEvent.
      *
-     * @return the EventDialog object which {@link java.util.Optional could} return
-     * the new event when called via the blocking {@link super#showAndWait()} method.
+     * @param possibleCalendars a set of calendar names which the event could be assigned to
+     * @return the EventDialog object which will return the new event when called via the
+     * blocking {@link #showAndWait()} method.
      */
-    public static EventDialog newEvent() {
-        return new EventDialog(null);
+    public static EventDialog newEvent(Set<String> possibleCalendars) {
+        if (possibleCalendars == null || possibleCalendars.isEmpty()) {
+            throw new IllegalArgumentException("The set of possible calendars must not be null or empty");
+        }
+        return new EventDialog(null, null, possibleCalendars);
     }
 
     /**
      * create a new instance of this class to create a new CalendarEvent.
      *
-     * @param dateTime the date and time from which the initial date and time values
-     *                 of the EventDialog will be derived.
-     * @return the EventDialog object which {@link java.util.Optional could} return
-     * the new event when called via the blocking {@link super#showAndWait()} method.
+     * @param dateTime          the date and time from which the initial date and time values
+     *                          of the EventDialog will be derived.
+     * @param possibleCalendars a set of calendar names which the event could be assigned to
+     * @return the EventDialog object which will return the new event when called via the
+     * blocking {@link #showAndWait()} method.
      */
-    public static EventDialog newEventAt(LocalDate dateTime) {
-        return new EventDialog(dateTime);
+    public static EventDialog newEventAt(LocalDate dateTime, Set<String> possibleCalendars) {
+        return new EventDialog(dateTime, null, possibleCalendars);
     }
 
     /**
@@ -209,12 +252,16 @@ public class EventDialog extends Dialog<CalendarEvent> {
      * put together the scene graph for this object's DialogPane
      */
     private void constructGUI() {
-        final BorderPane titleBP, dateBP, startBP, endBP, locationBP;
+        final BorderPane titleBP, calBP, dateBP, startBP, endBP, locationBP;
         final HBox timeHB;
 
         titleBP = new BorderPane();
         titleBP.setLeft(new Label("Title: "));
         titleBP.setCenter(titleEntryField);
+
+        calBP = new BorderPane();
+        calBP.setLeft(new Label("Calendar: "));
+        calBP.setCenter(calendarSelector);
 
         dateBP = new BorderPane();
         dateBP.setLeft(new Label("Date: "));
@@ -246,7 +293,7 @@ public class EventDialog extends Dialog<CalendarEvent> {
         notesEntryArea.setPromptText("Notes");
         notesEntryArea.setMaxSize(MAX_NOTE_AREA_WID, MAX_NOTE_AREA_HEI);
 
-        VBox mainColumn = new VBox(titleBP, dateBP, timeHB, locationBP, notesEntryArea);
+        VBox mainColumn = new VBox(titleBP, calBP, dateBP, timeHB, locationBP, notesEntryArea);
         mainColumn.setAlignment(Pos.TOP_CENTER);
         this.setTitle("Event Editor");
         this.getDialogPane().setContent(mainColumn);
@@ -376,18 +423,24 @@ public class EventDialog extends Dialog<CalendarEvent> {
      * the value returned by this.showAndWait()
      *
      * @param bt the type of button that this is in response to.
-     * @return a CalendarEvent object if changes were committed. Otherwise, null.
+     * @return a Pair whose {@link Pair#getKey() key} is the name of the calendar that
+     * the event was assigned to and whose {@link Pair#getValue() value} is the newly
+     * created or edited CalendarEvent object.
      */
-    private CalendarEvent getResult(ButtonType bt) {
+    private Pair<String, CalendarEvent> getResult(ButtonType bt) {
         if (bt == ButtonType.OK) {
+            String selectedCalendar = calendarSelector.getSelectionModel().getSelectedItem();
             if (event == null) {
-                return new CalendarEvent(
-                        titleEntryField.getText(),
-                        date,
-                        start,
-                        end,
-                        nullIfBlank(locationEntryField.getText()),
-                        nullIfBlank(notesEntryArea.getText())
+                return new Pair<>(
+                        selectedCalendar,
+                        new CalendarEvent(
+                                titleEntryField.getText(),
+                                date,
+                                start,
+                                end,
+                                nullIfBlank(locationEntryField.getText()),
+                                nullIfBlank(notesEntryArea.getText())
+                        )
                 );
             } else {
                 event.setTitle(titleEntryField.getText());
@@ -396,7 +449,7 @@ public class EventDialog extends Dialog<CalendarEvent> {
                 event.setEndTime(end);
                 event.setLocation(nullIfBlank(locationEntryField.getText()));
                 event.setNotes(nullIfBlank(notesEntryArea.getText()));
-                return event;
+                return new Pair<>(selectedCalendar, event);
             }
         }
         return null;
