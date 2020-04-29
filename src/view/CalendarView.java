@@ -30,7 +30,7 @@ public class CalendarView extends Application {
         this.stage = stage;
 
         controller = new CalendarController();
-        month = new MonthView(/* TODO: controller */);
+        month = new MonthView(controller);
         day = new DayView(/* TODO: controller */);
         week = new WeekView(/* TODO: controller */);
 
