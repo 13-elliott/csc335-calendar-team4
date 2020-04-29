@@ -7,43 +7,24 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * 
  * @author mollyopheim
- *
  */
 public class CalendarController {
-	private HashMap<String, CalendarModel> map = new HashMap<>();
-	
+	private final Map<String, CalendarModel> map;
+
 	/**
 	 * Initializes the CalendarController to have one default CalendarModel
 	 * in the map that keeps track of the CalendarModel objects.
 	 */
 	public CalendarController() {
+		map = new HashMap<>();
 		CalendarModel newModel = new CalendarModel();
 		map.put("Default", newModel);
-	}
-	
-	/**
-	 * Creates a CalendarEvent object to represent a calendar event and 
-	 * stores it in the events list. 
-	 * If the endTime is before the startTime, false will be returned and
-	 * the event will not be created.
-	 * @param title -- event title
-	 * @param date -- event date
-	 * @param startTime -- event start time
-	 * @param endTime -- event end time
-	 * @param location -- event location
-	 * @param notes -- notes about the event
-	 * @return true if event successfully created, and false otherwise
-	 */
-	public boolean createEvent(String title, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
-		if (!checkDate(startTime, endTime)) {
-			return false;
-		}
-		CalendarEvent event = new CalendarEvent(title, date, startTime, endTime, location, notes);
-		return true;
 	}
 
 	/**
@@ -55,138 +36,173 @@ public class CalendarController {
 	private boolean checkDate(LocalTime start, LocalTime end) {
 		return start.isBefore(end);
 	}
-	
+
 	/**
-	 * This method adds a new CalendarModel object to the map
-	 * of CalendarModel's
-	 * 
-	 * @param newModel -- the new CalendarModel object
-	 * @param name -- the name of the new CalendarModel
+	 * get a set containing the names of all the calendars.
+	 *
+	 * @return a set containing the names of all the calendars
 	 */
-	public void addCalendarModel(CalendarModel newModel, String name) {
-		map.put(name, newModel);
+	public Set<String> getCalendarNames() {
+		return new HashSet<>(map.keySet());
 	}
-	
+
 	/**
-	 * Getter for a CalendarModel object in the CalendarModel map
-	 * 
-	 * @param name -- the String associated with the CalendarModel to
-	 * get from the CalendarModel map
-	 * @return the CalendarModel object found, null if no CalendarModel
-	 * is found with the name
+	 * creates and adds a new calendar with the given name
+	 *
+	 * @param name -- the name of the calendar
+	 * @throws CalendarAlreadyExistsException if a calendar with the given name already exists
 	 */
-	public CalendarModel getCalendarModel(String name) {
-		return map.get(name);
+	public void createNewCalendar(String name) throws CalendarAlreadyExistsException {
+		if (map.containsKey(name)) {
+			throw new CalendarAlreadyExistsException(name);
+		} else {
+			map.put(name, new CalendarModel());
+		}
 	}
-	
+
 	/**
 	 * Removes a CalendarModel from the dictionary that holds the
 	 * different calendars and their names
+	 *
 	 * @param name -- the name of the CalendarModel to be removed
 	 */
-	public void removeCalendarModel(String name) {
-		map.remove(name);
+	public boolean deleteCalendar(String name) {
+		return map.remove(name) != null;
 	}
-	
+
 	/**
 	 * Renames a CalendarModel in the map that keeps track of all of the
 	 * different calendars
-	 * @param newName -- the new name for the CalendarModel
-	 * @param oldName -- the old name of the CalendarModel
+	 *
+	 * @param newName -- the new name of the calendar
+	 * @param oldName -- the old name of the calendar
+	 * @throws CalendarAlreadyExistsException if a calendar with the given new name already exists
+	 * @throws NoSuchCalendarException        if no calendar with the given old name exists
 	 */
-	public void renameCalendarModel(String newName, String oldName) {
-		CalendarModel cal = map.get(oldName);
-		map.remove(oldName);
-		map.put(newName, cal);
+	public void renameCalendar(String newName, String oldName)
+			throws CalendarAlreadyExistsException, NoSuchCalendarException {
+		if (!map.containsKey(oldName)) {
+			throw new NoSuchCalendarException(oldName);
+		} else if (map.containsKey(newName)) {
+			throw new CalendarAlreadyExistsException(newName);
+		} else {
+			map.put(newName, map.remove(oldName));
+		}
 	}
-	
+
 	/**
 	 * Takes a CalendarModel and adds a new event to it
-	 * 
-	 * @param curModel -- the CalendarModel to add the event to
+	 *
+	 * @param calName  -- name of the calendar
 	 * @param newEvent -- the CalendarEvent to add to the CalendarModel
+	 * @throws NoSuchCalendarException if there is no calendar with the given name
 	 */
-	public void addEvent(CalendarModel curModel, CalendarEvent newEvent) {
-		curModel.addEvent(newEvent);
+	public void addEvent(String calName, CalendarEvent newEvent) throws NoSuchCalendarException {
+		if (map.containsKey(calName)) {
+			map.get(calName).addEvent(newEvent);
+		} else {
+			throw new NoSuchCalendarException(calName);
+		}
 	}
-	
+
 	/**
 	 * Takes a CalendarModel and removes an event from it
-	 * 
-	 * @param curModel -- the CalendarModel to add the event to
+	 *
+	 * @param calName  -- name of the calendar
 	 * @param newEvent -- the CalendarEvent to add to the CalendarModel
+	 * @throws NoSuchCalendarException if there is no calendar with the given name
 	 */
-	public void removeEvent(CalendarModel curModel, CalendarEvent newEvent) {
-		curModel.removeEvent(newEvent);
+	public void removeEvent(String calName, CalendarEvent newEvent) throws NoSuchCalendarException {
+		if (map.containsKey(calName)) {
+			map.get(calName).removeEvent(newEvent);
+		} else {
+			throw new NoSuchCalendarException(calName);
+		}
 	}
-	
+
 	/**
 	 * Looks for events within a year for a certain calendar
-	 * @param curModel -- the current model
-	 * @param year -- the year to get events from
-	 * @return the events found in that year
-	 */
-	public CalendarEvent[] getEventsInYear(CalendarModel curModel, int year) {
-		return curModel.getEventsInYear(year);
-	}
-	
-	/**
-	 * Looks for events within a month for a certain calendar 
 	 *
-	 * @param curModel -- the current model
-	 * @param year -- the year to get events from
-	 * @param month -- the month to get events from
-	 * @return the events found in that month
+	 * @param calName -- name of the calendar
+	 * @param year    -- the year to get events from
+	 * @return the events found in that year
+	 * @throws NoSuchCalendarException if there is no calendar with the given name
 	 */
-	public CalendarEvent[] getEventsInMonth(CalendarModel curModel, int year, int month) {
-		return curModel.getEventsInMonth(year, month);
+	public CalendarEvent[] getEventsInYear(String calName, int year) throws NoSuchCalendarException {
+		if (map.containsKey(calName)) {
+			return map.get(calName).getEventsInYear(year);
+		} else {
+			throw new NoSuchCalendarException(calName);
+		}
 	}
-	
+
 	/**
-	 * Looks for events within a day for a certain calendar 
-	 * 
-	 * @param curModel -- the current model
-	 * @param year -- the year to get events from
-	 * @param month -- the month to get events from
-	 * @param day -- the day to get events from
+	 * Looks for events within a month for a certain calendar
+	 *
+	 * @param calName -- name of the calendar
+	 * @param year    -- the year to get events from
+	 * @param month   -- the month to get events from
 	 * @return the events found in that month
+	 * @throws NoSuchCalendarException if there is no calendar with the given name
 	 */
-	public CalendarEvent[] getEventsInDay(CalendarModel curModel, int year, int month, int day) {
-		return curModel.getEventsInDay(year, month, day);
+	public CalendarEvent[] getEventsInMonth(String calName, int year, int month)
+			throws NoSuchCalendarException {
+		if (map.containsKey(calName)) {
+			return map.get(calName).getEventsInMonth(year, month);
+		} else {
+			throw new NoSuchCalendarException(calName);
+		}
 	}
-	
-	public CalendarEvent[] getEventsInDay(CalendarModel curModel, LocalDate day) {
-		return curModel.getEventsInDay(day);
-	}
-	
+
 	/**
-	 * Looks for events within an hour for a certain calendar 
-	 * 
-	 * @param curModel -- the current model
-	 * @param year -- the year to get events from
-	 * @param month -- the month to get events from
-	 * @param day -- the day to get events from
-	 * @param hour -- the hour to get events from
-	 * @return the events found in that hour
+	 * Looks for events within a month for a certain calendar
+	 *
+	 * @param calName -- name of the calendar
+	 * @param day     the date to query for events
+	 * @return the events found on that day
+	 * @throws NoSuchCalendarException if there is no calendar with the given name
 	 */
-	public CalendarEvent[] getEventsInHour(CalendarModel curModel, int year, int month, int day, int hour) {
-		return curModel.getEventsInHour(year, month, day, hour);
+	public CalendarEvent[] getEventsInDay(String calName, LocalDate day)
+			throws NoSuchCalendarException {
+		if (map.containsKey(calName)) {
+			return map.get(calName).getEventsInDay(day);
+		} else {
+			throw new NoSuchCalendarException(calName);
+		}
 	}
-	
-	public CalendarEvent[] getEventsInHour(CalendarModel curModel, LocalDateTime time) {
-		return curModel.getEventsInHour(time);
+
+	/**
+	 * Looks for events within a month for a certain calendar
+	 *
+	 * @param calName -- name of the calendar
+	 * @param time     the hour to query for events
+	 * @return the events found on that day
+	 * @throws NoSuchCalendarException if there is no calendar with the given name
+	 */
+	public CalendarEvent[] getEventsInHour(String calName, LocalDateTime time)
+			throws NoSuchCalendarException {
+		if (map.containsKey(calName)) {
+			return map.get(calName).getEventsInHour(time);
+		} else {
+			throw new NoSuchCalendarException(calName);
+		}
 	}
-	
+
 	/**
 	 * Gets the list of events in a current time range
-	 * 
-	 * @param curModel -- the current model
-	 * @param before -- the LocalDateTime for the start of the search
-	 * @param after -- the LocalDateTime for the end of the search
+	 *
+	 * @param calName -- name of the calendar
+	 * @param before  -- the LocalDateTime for the start of the search
+	 * @param after   -- the LocalDateTime for the end of the search
 	 * @return the events found in that range
 	 */
-	public CalendarEvent[] getEventsInRange(CalendarModel curModel, LocalDateTime before, LocalDateTime after) {
-		return curModel.getEventsInRange(before, after);
+	public CalendarEvent[] getEventsInRange(String calName, LocalDateTime before, LocalDateTime after)
+			throws NoSuchCalendarException {
+		if (map.containsKey(calName)) {
+			return map.get(calName).getEventsInRange(before, after);
+		} else {
+			throw new NoSuchCalendarException(calName);
+		}
 	}
-	
+
 }
