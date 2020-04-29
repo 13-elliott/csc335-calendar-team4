@@ -32,7 +32,7 @@ public class CalendarView extends Application {
         controller = new CalendarController();
         month = new MonthView(/* TODO: controller */);
         day = new DayView(/* TODO: controller */);
-        week = new WeekView(/* TODO: controller */);
+        week = new WeekView(controller);
 
         current = month;
 
