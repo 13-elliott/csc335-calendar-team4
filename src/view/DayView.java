@@ -144,6 +144,7 @@ public class DayView implements CalendarViewMode {
                                         if (!calName.equals(p.getKey())) {
                                             controller.removeEvent(calName, event);
                                             controller.addEvent(p.getKey(), event);
+                                            drawDay();
                                         } else {
                                             butt.setText(event.getTitle());
                                         }
