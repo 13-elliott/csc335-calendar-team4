@@ -14,6 +14,8 @@ import model.CalendarModel;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Locale;
 
 import controller.CalendarController;
@@ -85,11 +87,8 @@ public class MonthView implements CalendarViewMode {
                 b.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY,
                         new BorderWidths(0.5))));
                 Label l = new Label();
-                //b.getChildren().add(l);
                 b.setTop(l);
                 VBox eventBox = new VBox();
-                eventBox.setPrefSize(50, 50);
-                //b.getChildren().add(eventBox);
                 b.setCenter(eventBox);
                 panes.add(b);
                 grid.add(b, j, i);
@@ -190,9 +189,11 @@ public class MonthView implements CalendarViewMode {
                 CalendarEvent[] events;
 				try {
 					events = controller.getEventsInDay("Default", beg);
+					Arrays.sort(events, (a,b1) -> a.getStartTime().compareTo(b1.getStartTime()));
 					for (CalendarEvent event : events) {
 	                    Button button = new Button(event.getTitle());
 	                    button.setPrefSize(100, 5);
+	                    button.setStyle("-fx-font-size:5");
 	                    ((VBox) b.getChildren().get(1)).getChildren().add(button);
 	                    // TODO
 	                    button.setOnMouseClicked(butt -> {
