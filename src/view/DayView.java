@@ -10,7 +10,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Region;
 import javafx.util.Pair;
 import model.CalendarEvent;
 
@@ -88,18 +87,25 @@ public class DayView implements CalendarViewMode {
         return eventColumns;
     }
 
+    /**
+     * test if the given events overlap
+     *
+     * @param a a CalendarEvent
+     * @param b a CalendarEvent
+     * @return true iff the times between the start and end of a and b overlap
+     */
     private boolean eventsOverlap(CalendarEvent a, CalendarEvent b) {
-        if (!a.getDate().equals(b.getDate()))
-            // different days
-            return false;
-        LocalTime
-                aStart = a.getStartTime(),
-                bStart = b.getStartTime(),
-                aEnd = a.getEndTime(),
-                bEnd = b.getEndTime();
-        return (!aStart.isAfter(bEnd) && !bStart.isAfter(aEnd));
+        return a.getDate().equals(b.getDate())
+                && a.getStartTime().isBefore(b.getEndTime())
+                && b.getStartTime().isBefore(a.getEndTime());
     }
 
+    /**
+     * construct a new GridPane to represent the current day.
+     * Consists of one column, holding the hour:minute labels
+     *
+     * @return a new GridPane to represent the current day
+     */
     private GridPane constructDayPane() {
         GridPane dayPane = new GridPane();
 //        dayPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
@@ -123,6 +129,12 @@ public class DayView implements CalendarViewMode {
         return dayPane;
     }
 
+    /**
+     * add the given collection of events to the dayPane as buttons
+     *
+     * @param eventColumns a grouping of event information of the kind returned by
+     *                     {@link #getEventColumns()}.
+     */
     private void displayEvents(List<List<Pair<String, CalendarEvent>>> eventColumns) {
         for (int colNum = 1; colNum <= eventColumns.size(); colNum++) {
 //            ColumnConstraints constraints = new ColumnConstraints();
@@ -135,7 +147,7 @@ public class DayView implements CalendarViewMode {
                 Button butt = new Button(event.getTitle());
                 butt.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
                 butt.setAlignment(Pos.TOP_CENTER);
-                butt.setOnAction(e ->
+                butt.setOnAction(actionEvent ->
                         EventDialog.editEvent(event, calName, controller.getCalendarNames())
                                 .showAndWait()
                                 .ifPresent(p -> {
@@ -159,11 +171,18 @@ public class DayView implements CalendarViewMode {
         }
     }
 
+    /**
+     * @param t a time of day
+     * @return the row within dayPanel that corresponds to the given time
+     */
     private int getRowNumber(LocalTime t) {
         return (t.getHour() * NUM_HOUR_SUBSECTIONS)
                 + (int) Math.floor(NUM_HOUR_SUBSECTIONS * (t.getMinute() / 60.0));
     }
 
+    /**
+     * refresh and draw the current day
+     */
     private void drawDay() {
         header.setText(date.toString());
         List<List<Pair<String, CalendarEvent>>> eventColumns = getEventColumns();
