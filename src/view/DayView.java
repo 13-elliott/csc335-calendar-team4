@@ -10,6 +10,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.text.Font;
 import javafx.util.Pair;
 import model.CalendarEvent;
 
@@ -29,27 +30,7 @@ public class DayView implements CalendarViewMode {
     private Set<String> visibleCalendars;
     private LocalDate date;
 
-    public DayView(CalendarController controller) {
-        this.controller = controller;
-        date = LocalDate.now();
-        visibleCalendars = controller.getCalendarNames();
-
-        root = new BorderPane();
-        top = new BorderPane();
-        backward = new Button("<-");
-        header = new Label();
-        forward = new Button("->");
-        forward.setOnAction(e -> setDate(date.plusDays(1)));
-        backward.setOnAction(e -> setDate(date.minusDays(1)));
-
-        top.setLeft(backward);
-        top.setRight(forward);
-        top.setCenter(header);
-        root.setTop(top);
-//        dayPane.setMaxSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
-
-        drawDay();
-    }
+    private static final int COL0_PERCENT = 10;
 
     /**
      * @return a list of columns containing events, used for displaying the events
@@ -87,6 +68,29 @@ public class DayView implements CalendarViewMode {
         return eventColumns;
     }
 
+    public DayView(CalendarController controller) {
+        this.controller = controller;
+        date = LocalDate.now();
+        visibleCalendars = controller.getCalendarNames();
+
+        root = new BorderPane();
+        top = new BorderPane();
+        backward = new Button("<-");
+        header = new Label();
+        header.setFont(new Font(30));
+        forward = new Button("->");
+        forward.setOnAction(e -> setDate(date.plusDays(1)));
+        backward.setOnAction(e -> setDate(date.minusDays(1)));
+
+        top.setLeft(backward);
+        top.setRight(forward);
+        top.setCenter(header);
+        root.setTop(top);
+//        dayPane.setMaxSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
+
+        drawDay();
+    }
+
     /**
      * test if the given events overlap
      *
@@ -94,7 +98,7 @@ public class DayView implements CalendarViewMode {
      * @param b a CalendarEvent
      * @return true iff "a" and "b" would occupy the same row.
      */
-    private boolean eventsOverlap(CalendarEvent a, CalendarEvent b) {
+    private static boolean eventsOverlap(CalendarEvent a, CalendarEvent b) {
         int startA = getRowNumber(a.getStartTime());
         int startB = getRowNumber(b.getStartTime());
         int endA = getRowNumber(a.getEndTime()) + 1;
@@ -103,24 +107,40 @@ public class DayView implements CalendarViewMode {
     }
 
     /**
+     * @param t a time of day
+     * @return the row within dayPanel that corresponds to the given time
+     */
+    private static int getRowNumber(LocalTime t) {
+        return (t.getHour() * NUM_HOUR_SUBSECTIONS)
+                + (int) Math.floor(NUM_HOUR_SUBSECTIONS * (t.getMinute() / 60.0));
+    }
+
+    /**
      * construct a new GridPane to represent the current day.
      * Consists of one column, holding the hour:minute labels
      *
      * @return a new GridPane to represent the current day
      */
-    private GridPane constructDayPane() {
+    private static GridPane constructDayPane() {
         GridPane dayPane = new GridPane();
 //        dayPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 //        dayPane.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
         ColumnConstraints col0 = new ColumnConstraints();
-        col0.setMaxWidth(100);
-//        col0.setPrefWidth(50);
+        col0.setPercentWidth(COL0_PERCENT);
+//        col0.setMinWidth(50);
         dayPane.getColumnConstraints().add(col0);
         final int NUM_ROWS = 24 * NUM_HOUR_SUBSECTIONS;
         int hour = 0, minute = 0;
         for (int row = 0; row < NUM_ROWS; row++) {
             String timeStr = String.format("%02d:%02d", hour, minute);
-            dayPane.add(new Label(timeStr), 0, row);
+            Label l = new Label(timeStr);
+            if (row % 2 == 0) {
+                l.setStyle("-fx-background-color: lightgray; -fx-border-color: black");
+            } else {
+                l.setStyle("-fx-border-color: black");
+            }
+            l.setFont(new Font(15));
+            dayPane.add(l, 0, row);
 
             minute += MINUTE_INCREMENT;
             if (minute >= 60) {
@@ -138,9 +158,11 @@ public class DayView implements CalendarViewMode {
      *                     {@link #getEventColumns()}.
      */
     private void displayEvents(List<List<Pair<String, CalendarEvent>>> eventColumns) {
-        for (int colNum = 1; colNum <= eventColumns.size(); colNum++) {
-//            ColumnConstraints constraints = new ColumnConstraints();
-//            dayPane.getColumnConstraints().add(constraints);
+        final int nCols = eventColumns.size();
+        for (int colNum = 1; colNum <= nCols; colNum++) {
+            ColumnConstraints constraints = new ColumnConstraints();
+            constraints.setPercentWidth((100f - COL0_PERCENT) / nCols);
+            dayPane.getColumnConstraints().add(constraints);
             for (Pair<String, CalendarEvent> pair : eventColumns.get(colNum - 1)) {
                 String calName = pair.getKey();
                 CalendarEvent event = pair.getValue();
@@ -169,15 +191,6 @@ public class DayView implements CalendarViewMode {
 //                GridPane.setFillHeight(butt, true);
             }
         }
-    }
-
-    /**
-     * @param t a time of day
-     * @return the row within dayPanel that corresponds to the given time
-     */
-    private int getRowNumber(LocalTime t) {
-        return (t.getHour() * NUM_HOUR_SUBSECTIONS)
-                + (int) Math.floor(NUM_HOUR_SUBSECTIONS * (t.getMinute() / 60.0));
     }
 
     /**
