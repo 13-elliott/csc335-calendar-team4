@@ -92,12 +92,14 @@ public class DayView implements CalendarViewMode {
      *
      * @param a a CalendarEvent
      * @param b a CalendarEvent
-     * @return true iff the times between the start and end of a and b overlap
+     * @return true iff "a" and "b" would occupy the same row.
      */
     private boolean eventsOverlap(CalendarEvent a, CalendarEvent b) {
-        return a.getDate().equals(b.getDate())
-                && a.getStartTime().isBefore(b.getEndTime())
-                && b.getStartTime().isBefore(a.getEndTime());
+        int startA = getRowNumber(a.getStartTime());
+        int startB = getRowNumber(b.getStartTime());
+        int endA = getRowNumber(a.getEndTime()) + 1;
+        int endB = getRowNumber(b.getEndTime()) + 1;
+        return startA <= endB && startB <= endA;
     }
 
     /**
