@@ -11,6 +11,7 @@ import javafx.util.Pair;
 import model.CalendarEvent;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Set;
@@ -48,7 +49,7 @@ public class EventDialog extends Dialog<Pair<String, CalendarEvent>> {
      * if the user clicks OK. This can be determined if the return value of
      * {@link #showAndWait()} {@link java.util.Optional#isPresent() is present}.
      * <p>
-     * If given a Date object, the initial date and start/end times
+     * If given a temporal object, the initial date and start/end times
      * will be derived from that Date, and {@link #showAndWait()}
      * will {@link java.util.Optional optionally} return a {@link Pair}
      * with the name of the selected calendar as its key and the CalendarEvent
@@ -56,7 +57,8 @@ public class EventDialog extends Dialog<Pair<String, CalendarEvent>> {
      * If given null, then the current date and time will be used to set the
      * initial values.
      *
-     * @param seed              either a {@link CalendarEvent}, {@link LocalDate}, or null
+     * @param seed              either a {@link CalendarEvent}, {@link LocalDate}
+     *                          {@link LocalDateTime}, or null
      * @param selectedCalendar  the name of a calendar which will be the initial selection.
      *                          Must be a member of possibleCalendars, or else null, in which
      *                          case the first name from the sorted members of possibleCalendars
@@ -77,6 +79,12 @@ public class EventDialog extends Dialog<Pair<String, CalendarEvent>> {
             date = (LocalDate) seed;
             start = LocalTime.now();
             end = LocalTime.now();
+        } else if (seed instanceof LocalDateTime) {
+            event = null;
+            LocalDateTime dt = (LocalDateTime) seed;
+            date = dt.toLocalDate();
+            start = dt.toLocalTime();
+            end = dt.toLocalTime();
         } else {
             // initial values will be current date+time
             event = null;
@@ -181,13 +189,26 @@ public class EventDialog extends Dialog<Pair<String, CalendarEvent>> {
     /**
      * create a new instance of this class to create a new CalendarEvent.
      *
-     * @param dateTime          the date and time from which the initial date and time values
+     * @param dateTime          the date from which the initial date and time values
      *                          of the EventDialog will be derived.
      * @param possibleCalendars a set of calendar names which the event could be assigned to
      * @return the EventDialog object which will return the new event when called via the
      * blocking {@link #showAndWait()} method.
      */
     public static EventDialog newEventAt(LocalDate dateTime, Set<String> possibleCalendars) {
+        return new EventDialog(dateTime, null, possibleCalendars);
+    }
+
+    /**
+     * create a new instance of this class to create a new CalendarEvent.
+     *
+     * @param dateTime          the date and time from which the initial date and time values
+     *                          of the EventDialog will be derived.
+     * @param possibleCalendars a set of calendar names which the event could be assigned to
+     * @return the EventDialog object which will return the new event when called via the
+     * blocking {@link #showAndWait()} method.
+     */
+    public static EventDialog newEventAt(LocalDateTime dateTime, Set<String> possibleCalendars) {
         return new EventDialog(dateTime, null, possibleCalendars);
     }
 
