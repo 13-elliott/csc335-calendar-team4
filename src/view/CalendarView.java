@@ -11,10 +11,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Kitty Elliott
@@ -170,8 +167,8 @@ public class CalendarView extends Application {
                     selMod.select(name);
             }
             multipleSelectDialog.setResultConverter(bt -> {
-                if (bt == ButtonType.OK)
-                    return new HashSet<>(selMod.getSelectedItems());
+                if (bt.equals(ButtonType.OK))
+                    return new HashSet<>(selMod.getSelectedItems().filtered(Objects::nonNull));
                 else return null;
             });
             DialogPane dPane = multipleSelectDialog.getDialogPane();
