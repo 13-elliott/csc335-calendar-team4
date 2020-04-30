@@ -1,6 +1,7 @@
 package view;
 
 import controller.CalendarController;
+import controller.NoSuchCalendarException;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -28,8 +29,7 @@ public class WeekView implements CalendarViewMode {
     private final GridPane days;
     private final Label weekLabel;
     private final List<Region> dayRegions = new ArrayList<>();
-    //TODO: replace with controller functionality
-    private CalendarModel testModel = new CalendarModel();
+    private String currentCalendar = "Default";
 
     public WeekView(CalendarController controller) {
         this.controller = controller;
@@ -104,9 +104,32 @@ public class WeekView implements CalendarViewMode {
         scroll.setPrefSize(750, 750);
         scroll.setContent(days);
         root.setCenter(scroll);
-        testModel.addEvent(new CalendarEvent("14-14:30", LocalDate.now(), LocalTime.of(14, 0), LocalTime.of(14, 30), null, null));
-        testModel.addEvent(new CalendarEvent("12-13:30", LocalDate.now(), LocalTime.of(12, 0), LocalTime.of(13, 30), null, null));
-        testModel.addEvent(new CalendarEvent("14:30-15:30", LocalDate.now(), LocalTime.of(14, 30), LocalTime.of(15, 30), null, null));
+
+        days.setOnMouseClicked(event -> {
+            // get the row and col that is clicked on
+            for (Node node : days.getChildren()) {
+                if (node instanceof Region) {
+                    if (GridPane.getColumnIndex(node) < 1) return;
+                    if (node.getBoundsInParent().contains(event.getX(), event.getY())) {
+                        int clickedX = GridPane.getColumnIndex(node);
+                        int clickedY = (int) (event.getY() / ROW_HEIGHT);
+                        LocalDateTime time = LocalDateTime.of(currentView.plusDays(clickedX - 1), LocalTime.now().withHour(clickedY));
+                        EventDialog.newEventAt(
+                                time,
+                                controller.getCalendarNames()
+                        ).showAndWait().ifPresent(pair -> {
+                            try {
+                                controller.addEvent(pair.getKey(), pair.getValue());
+                            } catch (NoSuchCalendarException e) {
+                                e.printStackTrace();
+                            }
+
+                        });
+                    }
+                }
+            }
+            drawWeek();
+        });
     }
 
     /**
@@ -134,8 +157,15 @@ public class WeekView implements CalendarViewMode {
             if (date.isEqual(LocalDate.now())) dayRegions.get(i).setStyle("-fx-background-color:aqua");
         }
 
-        CalendarEvent[] events = testModel.getEventsInRange(currentView.atStartOfDay(),
-                endDate.atTime(23, 59, 59));
+        CalendarEvent[] events;
+        try {
+            events = controller.getEventsInRange(currentCalendar, currentView.atStartOfDay(),
+                    endDate.atTime(23, 59, 59));
+        } catch (NoSuchCalendarException e) {
+            e.printStackTrace();
+            return;
+        }
+        // TODO: Figure out why this won't display events
         for (CalendarEvent e : events) {
             //Do some math to figure out where to put the button
             int col = e.getDate().compareTo(currentView) + 1;
@@ -143,7 +173,7 @@ public class WeekView implements CalendarViewMode {
             float diff = (e.getEndTime().getHour() + (e.getEndTime().getMinute() / 60f)) -
                     (e.getStartTime().getHour() + (e.getStartTime().getMinute() / 60f));
             int rowSpan = (int) diff + 1;
-            diff += 0.05f;
+            diff += 0.05f; //Fudge the number into something that looks good
 
             //Create the button that will act as our event view
             Button b = new Button(e.getTitle());
@@ -154,8 +184,25 @@ public class WeekView implements CalendarViewMode {
             b.setPrefHeight(Double.MAX_VALUE);
             b.setMaxWidth(Double.MAX_VALUE);
 
-            //TODO: Implement onclick handlers for button events
-
+            //Set up the button event handler
+            b.setOnMouseClicked(event -> {
+                EventDialog.editEvent(
+                        e,
+                        currentCalendar,
+                        controller.getCalendarNames()
+                ).showAndWait().ifPresent(p -> {
+                    try {
+                        // move between calendars if necessary
+                        if (!currentCalendar.equals(p.getKey())) {
+                            controller.removeEvent(currentCalendar, e);
+                            controller.addEvent(p.getKey(), e);
+                        }
+                    } catch (NoSuchCalendarException ex) {
+                        ex.printStackTrace();
+                    }
+                    drawWeek();
+                });
+            });
             days.add(b, col, row, 1, rowSpan);
         }
     }
