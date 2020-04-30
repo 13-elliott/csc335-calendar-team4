@@ -11,7 +11,10 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Kitty Elliott
@@ -21,6 +24,7 @@ public class CalendarView extends Application {
     private CalendarController controller;
     private CalendarViewMode month, day, week,
             current;
+    private Set<String> currentlyVisibleCals;
     private VBox mainColumn;
 
     /**
@@ -31,6 +35,7 @@ public class CalendarView extends Application {
         this.stage = stage;
 
         controller = new CalendarController();
+        currentlyVisibleCals = controller.getCalendarNames();
         month = new MonthView(/* TODO: controller */);
         day = new DayView(/* TODO: controller */);
         week = new WeekView(/* TODO: controller */);
@@ -61,7 +66,16 @@ public class CalendarView extends Application {
         createCalItem.setOnAction(this::createCalendar);
         createMenu.getItems().addAll(createEventItem, createCalItem);
 
-        return new MenuBar(viewMenu, createMenu);
+        Menu changeMenu = new Menu("Change");
+        MenuItem visibleCalsMenuItem = new MenuItem("Visible Calendars");
+        visibleCalsMenuItem.setOnAction(this::changeVisibleCals);
+        MenuItem renameCalItem = new MenuItem("Rename a calendar");
+        renameCalItem.setOnAction(this::renameCalendar);
+        MenuItem deleteCalItem = new MenuItem("Delete a calendar");
+        deleteCalItem.setOnAction(this::deleteCalendar);
+        changeMenu.getItems().addAll(visibleCalsMenuItem, renameCalItem, deleteCalItem);
+
+        return new MenuBar(viewMenu, createMenu, changeMenu);
     }
 
     /**
@@ -81,10 +95,26 @@ public class CalendarView extends Application {
         stage.sizeToScene();
     }
 
-    private void createCalendar(ActionEvent e) {
+    private Optional<String> selectOneCalendar(String prompt) {
+        ChoiceDialog<String> cd = new ChoiceDialog<>();
+        cd.setTitle("Select Calendar");
+        cd.getDialogPane().setHeaderText(prompt);
+        cd.getItems().addAll(controller.getCalendarNames());
+        cd.getDialogPane().lookupButton(ButtonType.OK).addEventFilter(ActionEvent.ACTION,
+                okEvent -> {
+                    if (cd.getSelectedItem() == null) {
+                        okEvent.consume();
+                        new Alert(Alert.AlertType.ERROR, "You must make a selection")
+                                .showAndWait();
+                    }
+                });
+        return cd.showAndWait();
+    }
+
+    private Optional<String> getNewCalendarName(String prompt) {
         TextInputDialog in = new TextInputDialog();
         in.setTitle("Name Calendar");
-        in.setHeaderText("Please enter a name for the new calendar");
+        in.setHeaderText(prompt);
         // input validation:
         in.getDialogPane().lookupButton(ButtonType.OK)
                 .addEventFilter(ActionEvent.ACTION, okEvent -> {
@@ -98,10 +128,16 @@ public class CalendarView extends Application {
                         okEvent.consume();
                     }
                 });
-        in.showAndWait().ifPresent(newName -> {
+        return in.showAndWait();
+    }
+
+    private void createCalendar(ActionEvent e) {
+        getNewCalendarName("Please enter a name for the new calendar").ifPresent(newName -> {
             try {
                 controller.createNewCalendar(newName);
-            } catch (CalendarAlreadyExistsException ex) {
+                currentlyVisibleCals.add(newName);
+                current.setVisibleCalendars(currentlyVisibleCals);
+            } catch (CalendarAlreadyExistsException | NoSuchCalendarException ex) {
                 // handled by event filter above: should not occur
                 ex.printStackTrace();
             }
@@ -120,5 +156,71 @@ public class CalendarView extends Application {
                         ex.printStackTrace();
                     }
                 });
+    }
+
+    private void changeVisibleCals(ActionEvent actionEvent) {
+        Dialog<Set<String>> multipleSelectDialog = new Dialog<>();
+        {   // setup the dialog
+            ListView<String> lView = new ListView<>();
+            MultipleSelectionModel<String> selMod = lView.getSelectionModel();
+            selMod.setSelectionMode(SelectionMode.MULTIPLE);
+            for (String name : controller.getCalendarNames()) {
+                lView.getItems().add(name);
+                if (currentlyVisibleCals.contains(name))
+                    selMod.select(name);
+            }
+            multipleSelectDialog.setResultConverter(bt -> {
+                if (bt == ButtonType.OK)
+                    return new HashSet<>(selMod.getSelectedItems());
+                else return null;
+            });
+            DialogPane dPane = multipleSelectDialog.getDialogPane();
+            dPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+            dPane.setContent(lView);
+        }
+
+        multipleSelectDialog.showAndWait()
+                .ifPresent(newSet -> {
+                    currentlyVisibleCals = newSet;
+                    try {
+                        current.setVisibleCalendars(newSet);
+                    } catch (NoSuchCalendarException e) {
+                        e.printStackTrace();
+                    }
+                });
+    }
+
+    private void renameCalendar(ActionEvent actionEvent) {
+        selectOneCalendar("Select a calendar to rename")
+                .ifPresent(oldName ->
+                        getNewCalendarName(String.format("Please enter a new name for \"%s\"", oldName))
+                                .ifPresent(newName -> {
+                                    try {
+                                        controller.renameCalendar(newName, oldName);
+                                        currentlyVisibleCals.remove(oldName);
+                                        currentlyVisibleCals.add(newName);
+                                        current.setVisibleCalendars(currentlyVisibleCals);
+                                    } catch (CalendarAlreadyExistsException | NoSuchCalendarException e) {
+                                        e.printStackTrace();
+                                    }
+                                })
+                );
+    }
+
+    private void deleteCalendar(ActionEvent actionEvent) {
+        if (controller.getCalendarNames().size() <= 1) {
+            new Alert(Alert.AlertType.ERROR, "Cannot delete the only remaining calendar")
+                    .showAndWait();
+            return;
+        }
+        selectOneCalendar("Select a calendar to delete").ifPresent(toDelete -> {
+            controller.deleteCalendar(toDelete);
+            currentlyVisibleCals.remove(toDelete);
+            try {
+                current.setVisibleCalendars(currentlyVisibleCals);
+            } catch (NoSuchCalendarException e) {
+                e.printStackTrace();
+            }
+        });
     }
 }
