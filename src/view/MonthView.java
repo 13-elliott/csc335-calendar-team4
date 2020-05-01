@@ -1,5 +1,6 @@
 package view;
 
+import controller.NoSuchCalendarException;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Locale;
+import java.util.Set;
 
 import controller.CalendarController;
 import controller.NoSuchCalendarException;
@@ -257,6 +259,11 @@ public class MonthView implements CalendarViewMode {
     @Override
     public LocalDate getDate() {
         return currentView.withDayOfMonth(1);
+    }
+
+    @Override
+    public void setVisibleCalendars(Set<String> calNames) throws NoSuchCalendarException {
+        // TODO
     }
 
     @Override
