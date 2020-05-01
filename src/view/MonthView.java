@@ -197,7 +197,9 @@ public class MonthView implements CalendarViewMode {
 	                    ((VBox) b.getChildren().get(1)).getChildren().add(button);
 	                    // TODO
 	                    button.setOnMouseClicked(butt -> {
-	                            System.out.println("yuh");
+	                    	System.out.println("here");
+	                            EventDialog.editEvent(event, "Default", controller.getCalendarNames()).showAndWait();
+	                            drawMonth();
 	                    });
 	                }
 				} catch (NoSuchCalendarException e) {
@@ -207,8 +209,6 @@ public class MonthView implements CalendarViewMode {
 
             }
         }
-        System.out.println("NEXT MONTH");
-
     }
 
     /**
