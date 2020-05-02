@@ -270,7 +270,7 @@ public class MonthView implements CalendarViewMode {
 
     @Override
     public LocalDate getDate() {
-        return currentView.withDayOfMonth(1);
+        return currentView;
     }
 
     @Override
