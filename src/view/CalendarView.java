@@ -84,6 +84,11 @@ public class CalendarView extends Application {
         if (target == current) return; // no-op
 
         target.setDate(current.getDate());
+        try {
+            target.setVisibleCalendars(currentlyVisibleCals);
+        } catch (NoSuchCalendarException e) {
+            e.printStackTrace();
+        }
 
         List<Node> children = mainColumn.getChildren();
         children.remove(children.size() - 1);
