@@ -1,5 +1,6 @@
 package view;
 
+import controller.CalendarController;
 import controller.NoSuchCalendarException;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -7,24 +8,26 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import model.CalendarEvent;
-import model.CalendarModel;
 
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-
+import java.util.*;
+/**
+ * 
+ * @author andrewfiliberti
+ *
+ */
 public class MonthView implements CalendarViewMode {
-    private BorderPane b;
+    private BorderPane outer;
     private LocalDate currentView;
     private GridPane grid;
-    private CalendarModel model;
-    private List<TilePane> panes;
+    private ArrayList<BorderPane> panes;
     private Label title;
+    private CalendarController controller;
+    private Set<String> visibleCals;
 
     /**
      * The start method overridden from Application
@@ -33,10 +36,11 @@ public class MonthView implements CalendarViewMode {
      * method of the program and holds all of the
      * initialization of the GUI and it's event handelers.
      */
-    public MonthView() {
+    public MonthView(CalendarController controller) {
         // Initialize current day and lists to help with construction
         currentView = LocalDate.now();
-        model = new CalendarModel();
+        this.controller = controller;
+        visibleCals = controller.getCalendarNames();
 
         // Label on Calendar with all the weekdays as well as month/year label
         GridPane dayNames = new GridPane();
@@ -47,15 +51,15 @@ public class MonthView implements CalendarViewMode {
         for (int i = 0; i < 7; i++) {
             Label l = new Label(weekDays[i]);
             dayNames.add(l, i, 0);
-            GridPane.setMargin(l, new Insets(1, 28, 1, 28));
+            GridPane.setMargin(l, new Insets(1, 39, 1, 39));
         }
 
         // initialize buttons
         Button forward = new Button("->");
         Button backward = new Button("<-");
+        HBox hbox = new HBox();
         Region filler = new Region();
         HBox.setHgrow(filler, Priority.ALWAYS);
-        HBox hbox = new HBox();
         hbox.getChildren().addAll(backward, filler, forward);
 
         // vBox to help layout
@@ -67,23 +71,26 @@ public class MonthView implements CalendarViewMode {
 
         // Create grid
         grid = new GridPane();
-        grid.setGridLinesVisible(true);
 
         // List of panes created
         panes = new ArrayList<>();
 
         // Create borderpane
-        b = new BorderPane();
+        outer = new BorderPane();
 
         // Initialize board with panes
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 7; j++) {
-                TilePane t = new TilePane();
-                t.setPrefHeight(100);
+                BorderPane b = new BorderPane();
+                b.setPrefSize(100, 100);
+                b.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY,
+                        new BorderWidths(0.5))));
                 Label l = new Label();
-                t.getChildren().add(l);
-                panes.add(t);
-                grid.add(t, j, i);
+                b.setTop(l);
+                VBox eventBox = new VBox();
+                b.setCenter(eventBox);
+                panes.add(b);
+                grid.add(b, j, i);
             }
         }
 
@@ -94,23 +101,30 @@ public class MonthView implements CalendarViewMode {
         grid.setOnMouseClicked(event -> {
             // get the row and col that is clicked on
             for (Node node : grid.getChildren()) {
-                if (node instanceof TilePane) {
+                if (node instanceof BorderPane) {
                     if (node.getBoundsInParent().contains(event.getX(), event.getY())) {
                         int clickedY = GridPane.getRowIndex(node);
                         int clickedX = GridPane.getColumnIndex(node);
                         int day = getDayOnClick(clickedY, clickedX);
                         if (day > 0) {
                             // TODO
-//                            EventDialog.newEventAt(
-//                                    currentView.withDayOfMonth(day),
-//                                    controller.getCalendarNames()
-//                            ).showAndWait()
-//                                    // add the event if it was created
-//                                    .ifPresent(pair -> controller.addEvent(
-//                                            pair.getValue(),
-//                                            pair.getKey()
-//                                    ));
+                            EventDialog.newEventAt(
+                                    currentView.withDayOfMonth(day),
+                                    visibleCals
+                            ).showAndWait()
+                                    // add the event if it was created
+                                    .ifPresent(pair -> {
+										try {
+											controller.addEvent(
+											        pair.getKey(),
+											        pair.getValue()
+											);
+										} catch (NoSuchCalendarException e1) {
+											e1.printStackTrace();
+										}
+							});
                         }
+                        drawMonth();
                     }
                 }
             }
@@ -119,7 +133,6 @@ public class MonthView implements CalendarViewMode {
         // Next Month
         forward.setOnAction(e -> {
             currentView = currentView.plusMonths(1);
-
             drawMonth();
         });
 
@@ -129,63 +142,61 @@ public class MonthView implements CalendarViewMode {
             drawMonth();
         });
 
-        b.setTop(vbox);
-        b.setCenter(grid);
+        outer.setTop(vbox);
+        outer.setCenter(grid);
     }
 
     /**
      * This method draws the month view.
      */
     public void drawMonth() {
-        // *Remove Events will be implemented here*
+        removeEvents();
 
         String month = currentView.getMonth().getDisplayName(TextStyle.FULL, Locale.US);
         String year = "" + currentView.getYear();
         title.setText(month + " " + year);
-
+        
         LocalDate beg = currentView.withDayOfMonth(1);
 
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 7; j++) {
                 int index = i * 7 + j;
-                TilePane t = panes.get(index);
-                t.setStyle("");
-                t.setPrefHeight(100);
-                ((Label) t.getChildren().get(0)).setText("");
-                t.setStyle("-fx-background-color:white");
-
-                if (beg.getMonthValue() > currentView.getMonthValue()) continue;
-                if (index < beg.getDayOfWeek().getValue()) continue;
-                ((Label) t.getChildren().get(0)).setText(beg.getDayOfMonth() + "");
-                if (LocalDate.now().equals(beg))
-                    t.setStyle("-fx-background-color:aqua");
-
-                beg = beg.plusDays(1);
-
-                t.getChildren().removeIf(Button.class::isInstance);
-                CalendarEvent[] events = model.getEventsInDay(beg);
-                for (CalendarEvent event : events) {
-                    Button button = new Button(event.getTitle());
-                    t.getChildren().add(button);
-                    // TODO
-//                    button.setOnMouseClicked(butt ->
-//                            EventDialog.editEvent(
-//                                    event,
-//                                    currentCalendarName,
-//                                    controller.getCalendarNames()
-//                            ).showAndWait().ifPresent(pair ->
-//                                    controller.moveEvent(
-//                                            // event to move
-//                                            pair.getValue(),
-//                                            // calendar name to move it to
-//                                            pair.getKey()
-//                                    )
-//                            )
-//                    );
+                BorderPane b = panes.get(index);
+                b.setStyle("");
+                b.setPrefHeight(100);
+                ((Label) b.getChildren().get(0)).setText("");
+                // Checks if day starts on sunday
+                if(index == 0 && beg.getDayOfWeek().getValue() == 7) {
+                	;
                 }
+                else if (beg.getMonthValue() > currentView.getMonthValue()) {
+                	b.setStyle("-fx-background-color:grey");
+                	continue;
+                }
+                else if (index < beg.getDayOfWeek().getValue()) {
+                	b.setStyle("-fx-background-color:grey");
+                	continue;
+                }
+                
+                ((Label) b.getChildren().get(0)).setText(beg.getDayOfMonth() + "");
+                
+                if (LocalDate.now().equals(beg))
+                    b.setStyle("-fx-background-color:aqua");
+
+                b.getChildren().removeIf(Button.class::isInstance);
+                CalendarEvent[] events;
+                for(String s : visibleCals) {
+                    try {
+                        events = controller.getEventsInDay(s, beg);
+                        printEvents(events, beg, b, s);
+                    } catch (NoSuchCalendarException e) {
+                        e.printStackTrace();
+                    }
+                }
+				beg = beg.plusDays(1);
+
             }
         }
-
     }
 
     /**
@@ -197,7 +208,9 @@ public class MonthView implements CalendarViewMode {
     public void removeEvents() {
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 7; j++) {
-
+            	int index = i * 7 + j;
+                BorderPane t = panes.get(index);
+                ((VBox) t.getChildren().get(1)).getChildren().clear();
             }
         }
     }
@@ -215,7 +228,7 @@ public class MonthView implements CalendarViewMode {
      * @return the day clicked on or -1.
      */
     public int getDayOnClick(int row, int col) {
-        TilePane t = panes.get(row * 7 + col);
+        BorderPane t = panes.get(row * 7 + col);
         String dayClicked = ((Label) t.getChildren().get(0)).getText();
         if (dayClicked.equals("")) {
             return -1;
@@ -223,20 +236,55 @@ public class MonthView implements CalendarViewMode {
             return Integer.parseInt(dayClicked);
         }
     }
+    
+    public void printEvents(CalendarEvent[] events, LocalDate beg, BorderPane b, String calName) {
+    	Arrays.sort(events, Comparator.comparing(CalendarEvent::getStartTime));
+		for (CalendarEvent event : events) {
+		    Button button = new Button(event.getTitle());
+		    button.setPrefSize(100, 5);
+		    button.setStyle("-fx-font-size:5");
+		    ((VBox) b.getChildren().get(1)).getChildren().add(button);
+		    button.setOnMouseClicked(butt -> {
+                System.out.println("here");
+                EventDialog.editEvent(event, calName, controller.getCalendarNames()).showAndWait()
+                        .ifPresent(p -> {
+                            try {
+                                // move between calendars if necessary
+                                if (!calName.equals(p.getKey())) {
+                                    controller.removeEvent(calName, event);
+                                    controller.addEvent(p.getKey(), event);
+                                }
+                            } catch (NoSuchCalendarException ex) {
+                                ex.printStackTrace();
+                            }
+                            drawMonth();
+                        });
+            });
+		}
+    }
 
     @Override
     public Node getNode() {
-        return b;
+        return outer;
     }
 
     @Override
     public LocalDate getDate() {
-        return currentView;
+        return currentView.withDayOfMonth(1);
     }
 
     @Override
     public void setVisibleCalendars(Set<String> calNames) throws NoSuchCalendarException {
-        // TODO
+    	Set<String> allCals = controller.getCalendarNames();
+        Set<String> cur = new HashSet<>();
+        for (String name : calNames) {
+            cur.add(name);
+            if (!allCals.contains(name)) {
+            	throw new NoSuchCalendarException(name);
+            }
+        }
+        visibleCals = cur;
+        drawMonth();
     }
 
     @Override
