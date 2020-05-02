@@ -26,9 +26,10 @@ public class CalendarView extends Application {
 
     /**
      * @param stage represents the main application window.
+     * @throws NoSuchCalendarException 
      */
     @Override
-    public void start(Stage stage) {
+    public void start(Stage stage) throws NoSuchCalendarException {
         this.stage = stage;
 
         controller = new CalendarController();
