@@ -249,6 +249,11 @@ public class WeekView implements CalendarViewMode {
     }
 
     @Override
+    public void setVisibleCalendars(Set<String> calNames) throws NoSuchCalendarException {
+        // TODO
+    }
+
+    @Override
     public void setDate(LocalDate date) {
         currentView = getStartOfWeek(date);
         drawWeek();
