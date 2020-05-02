@@ -1,6 +1,5 @@
 package view;
 
-import controller.NoSuchCalendarException;
 import controller.CalendarController;
 import controller.NoSuchCalendarException;
 import javafx.geometry.Insets;
@@ -13,14 +12,14 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import model.CalendarEvent;
-import model.CalendarModel;
 
 import java.time.LocalDate;
-import java.util.Set;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class WeekView implements CalendarViewMode {
     private static final int ROW_HEIGHT = 50;
@@ -31,7 +30,7 @@ public class WeekView implements CalendarViewMode {
     private final GridPane days;
     private final Label weekLabel;
     private final List<Region> dayRegions = new ArrayList<>();
-    private String currentCalendar = "Default";
+    private Set<String> currentCalendars;
 
     public WeekView(CalendarController controller) {
         this.controller = controller;
@@ -40,6 +39,7 @@ public class WeekView implements CalendarViewMode {
         days.setPadding(new Insets(0));
         days.setGridLinesVisible(true);
         currentView = getStartOfWeek(LocalDate.now());
+        currentCalendars = controller.getCalendarNames();
 
         //Add day labels
         String[] weekDays = new String[]{"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday",
@@ -73,6 +73,7 @@ public class WeekView implements CalendarViewMode {
             days.add(l, 0, i + 1);
         }
 
+        //Top part of the pane - buttons that change the week, and the week display
         VBox top = new VBox();
         Button forward = new Button("->");
         forward.setOnMouseClicked(event -> {
@@ -85,6 +86,7 @@ public class WeekView implements CalendarViewMode {
             currentView = currentView.minusDays(7);
             drawWeek();
         });
+        //Create a region that is always the size of the window, to keep buttons on opposite ends
         Region filler = new Region();
         HBox.setHgrow(filler, Priority.ALWAYS);
         HBox buttons = new HBox();
@@ -96,11 +98,10 @@ public class WeekView implements CalendarViewMode {
         weekLabel.setFont(new Font(35));
         weekBox.getChildren().add(weekLabel);
 
-
         top.getChildren().addAll(buttons, weekBox);
         root.setTop(top);
 
-
+        //Set up the scroll pane
         days.setMaxSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
         ScrollPane scroll = new ScrollPane();
         scroll.setPrefSize(750, 750);
@@ -125,12 +126,12 @@ public class WeekView implements CalendarViewMode {
                             } catch (NoSuchCalendarException e) {
                                 e.printStackTrace();
                             }
-
                         });
+                        drawWeek();
+                        break;
                     }
                 }
             }
-            drawWeek();
         });
     }
 
@@ -159,54 +160,53 @@ public class WeekView implements CalendarViewMode {
             if (date.isEqual(LocalDate.now())) dayRegions.get(i).setStyle("-fx-background-color:aqua");
         }
 
-        CalendarEvent[] events;
-        try {
-            events = controller.getEventsInRange(currentCalendar, currentView.atStartOfDay(),
-                    endDate.atTime(23, 59, 59));
-        } catch (NoSuchCalendarException e) {
-            e.printStackTrace();
-            return;
-        }
-        // TODO: Figure out why this won't display events
-        for (CalendarEvent e : events) {
-            //Do some math to figure out where to put the button
-            int col = e.getDate().compareTo(currentView) + 1;
-            int row = e.getStartTime().getHour() + 1;
-            float diff = (e.getEndTime().getHour() + (e.getEndTime().getMinute() / 60f)) -
-                    (e.getStartTime().getHour() + (e.getStartTime().getMinute() / 60f));
-            int rowSpan = (int) diff + 1;
-            diff += 0.05f; //Fudge the number into something that looks good
+        //Go through the visible calendars
+        for (String s : currentCalendars) {
+            CalendarEvent[] events;
+            try {
+                events = controller.getEventsInRange(s, currentView.atStartOfDay(),
+                        endDate.atTime(23, 59, 59));
+            } catch (NoSuchCalendarException e) {
+                e.printStackTrace();
+                return;
+            }
+            //Go through the events in each calendar
+            for (CalendarEvent e : events) {
+                //Do some math to figure out where to put the button
+                int col = e.getDate().getDayOfWeek().getValue() + 1;
+                int row = e.getStartTime().getHour() + 1;
+                float diff = (e.getEndTime().getHour() + (e.getEndTime().getMinute() / 60f)) -
+                        (e.getStartTime().getHour() + (e.getStartTime().getMinute() / 60f));
+                int rowSpan = (int) diff + 1;
+                diff += 0.05f; //Fudge the number into something that looks good
 
-            //Create the button that will act as our event view
-            Button b = new Button(e.getTitle());
-            b.setTranslateY(ROW_HEIGHT / 2f * e.getStartTime().getMinute() / 60f - 10); //10 is a magic number to fudge the button into a good looking place
-            b.setPadding(new Insets(5));
-            b.setTextAlignment(TextAlignment.CENTER);
-            b.setMaxHeight(diff * ROW_HEIGHT);
-            b.setPrefHeight(Double.MAX_VALUE);
-            b.setMaxWidth(Double.MAX_VALUE);
+                //Create the button that will act as our event view
+                Button b = new Button(e.getTitle());
+                b.setTranslateY(ROW_HEIGHT / 2f * e.getStartTime().getMinute() / 60f - 10); //10 is a magic number to fudge the button into a good looking place
+                b.setPadding(new Insets(5));
+                b.setTextAlignment(TextAlignment.CENTER);
+                b.setMaxHeight(diff * ROW_HEIGHT);
+                b.setPrefHeight(Double.MAX_VALUE);
+                b.setMaxWidth(Double.MAX_VALUE);
 
-            //Set up the button event handler
-            b.setOnMouseClicked(event -> {
-                EventDialog.editEvent(
-                        e,
-                        currentCalendar,
-                        controller.getCalendarNames()
-                ).showAndWait().ifPresent(p -> {
-                    try {
-                        // move between calendars if necessary
-                        if (!currentCalendar.equals(p.getKey())) {
-                            controller.removeEvent(currentCalendar, e);
-                            controller.addEvent(p.getKey(), e);
-                        }
-                    } catch (NoSuchCalendarException ex) {
-                        ex.printStackTrace();
-                    }
-                    drawWeek();
-                });
-            });
-            days.add(b, col, row, 1, rowSpan);
+                //Set up the button event handler
+                b.setOnMouseClicked(event -> EventDialog.editEvent(e, s, controller.getCalendarNames())
+                        .showAndWait().ifPresent(p -> {
+                            try {
+                                // move between calendars if necessary
+                                if (!s.equals(p.getKey())) {
+                                    controller.removeEvent(s, e);
+                                    controller.addEvent(p.getKey(), e);
+                                }
+                            } catch (NoSuchCalendarException ex) {
+                                ex.printStackTrace();
+                            }
+                            drawWeek();
+                        }));
+                days.add(b, col, row, 1, rowSpan);
+            }
         }
+
     }
 
     /**
@@ -222,6 +222,13 @@ public class WeekView implements CalendarViewMode {
         return (hb == null) ? null : (Label) hb.getChildren().get(0);
     }
 
+    /**
+     * From a row and col in the grid pane, get the object at that row and col
+     *
+     * @param col col to retrieve from
+     * @param row row to retrieve from
+     * @return the object at row and col
+     */
     private Node getNodeAt(int col, int row) {
         for (Node n : days.getChildren()) {
             //Children in the GridPane can somehow not be in the GridPane?
@@ -236,6 +243,12 @@ public class WeekView implements CalendarViewMode {
         return null;
     }
 
+    /**
+     * Gets the start of a week from a given date
+     *
+     * @param date day in the middle of the week
+     * @return day starting at Sunday
+     */
     private LocalDate getStartOfWeek(LocalDate date) {
         return date.minusDays(date.getDayOfWeek().getValue());
     }
@@ -252,7 +265,14 @@ public class WeekView implements CalendarViewMode {
 
     @Override
     public void setVisibleCalendars(Set<String> calNames) throws NoSuchCalendarException {
-        // TODO
+        Set<String> superset = controller.getCalendarNames();
+        Set<String> curSet = new HashSet<>();
+        for (String name : calNames) {
+            curSet.add(name);
+            if (!superset.contains(name)) throw new NoSuchCalendarException(name);
+        }
+        currentCalendars = curSet;
+        drawWeek();
     }
 
     @Override
