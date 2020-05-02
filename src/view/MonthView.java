@@ -12,11 +12,7 @@ import javafx.scene.text.Font;
 import model.CalendarEvent;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 
 import controller.CalendarController;
 /**
@@ -39,9 +35,8 @@ public class MonthView implements CalendarViewMode {
      * calls it's launch method. This is the main
      * method of the program and holds all of the
      * initialization of the GUI and it's event handelers.
-     * @throws NoSuchCalendarException 
      */
-    public MonthView(CalendarController controller) throws NoSuchCalendarException {
+    public MonthView(CalendarController controller) {
         // Initialize current day and lists to help with construction
         currentView = LocalDate.now();
         this.controller = controller;
@@ -125,17 +120,11 @@ public class MonthView implements CalendarViewMode {
 											        pair.getValue()
 											);
 										} catch (NoSuchCalendarException e1) {
-											// TODO Auto-generated catch block
 											e1.printStackTrace();
 										}
 							});
                         }
-                        try {
-							drawMonth();
-						} catch (NoSuchCalendarException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
+                        drawMonth();
                     }
                 }
             }
@@ -144,23 +133,13 @@ public class MonthView implements CalendarViewMode {
         // Next Month
         forward.setOnAction(e -> {
             currentView = currentView.plusMonths(1);
-            try {
-				drawMonth();
-			} catch (NoSuchCalendarException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+            drawMonth();
         });
 
         // Previous Month
         backward.setOnAction(e -> {
             currentView = currentView.minusMonths(1);
-            try {
-				drawMonth();
-			} catch (NoSuchCalendarException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+            drawMonth();
         });
 
         outer.setTop(vbox);
@@ -169,9 +148,8 @@ public class MonthView implements CalendarViewMode {
 
     /**
      * This method draws the month view.
-     * @throws NoSuchCalendarException 
      */
-    public void drawMonth() throws NoSuchCalendarException {
+    public void drawMonth() {
         removeEvents();
 
         String month = currentView.getMonth().getDisplayName(TextStyle.FULL, Locale.US);
@@ -208,8 +186,12 @@ public class MonthView implements CalendarViewMode {
                 b.getChildren().removeIf(Button.class::isInstance);
                 CalendarEvent[] events;
                 for(String s : visibleCals) {
-                	events = controller.getEventsInDay(s, beg);
-                	printEvents(events, beg, b, s);
+                    try {
+                        events = controller.getEventsInDay(s, beg);
+                        printEvents(events, beg, b, s);
+                    } catch (NoSuchCalendarException e) {
+                        e.printStackTrace();
+                    }
                 }
 				beg = beg.plusDays(1);
 
@@ -222,9 +204,8 @@ public class MonthView implements CalendarViewMode {
      * This method removes all of the events from
      * the panes in the grid so new events can be
      * updated for the month.
-     * @throws NoSuchCalendarException 
      */
-    public void removeEvents() throws NoSuchCalendarException {
+    public void removeEvents() {
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 7; j++) {
             	int index = i * 7 + j;
@@ -257,7 +238,7 @@ public class MonthView implements CalendarViewMode {
     }
     
     public void printEvents(CalendarEvent[] events, LocalDate beg, BorderPane b, String calName) {
-    	Arrays.sort(events, (a,b1) -> a.getStartTime().compareTo(b1.getStartTime()));
+    	Arrays.sort(events, Comparator.comparing(CalendarEvent::getStartTime));
 		for (CalendarEvent event : events) {
 		    Button button = new Button(event.getTitle());
 		    button.setPrefSize(100, 5);
@@ -267,12 +248,7 @@ public class MonthView implements CalendarViewMode {
 		    button.setOnMouseClicked(butt -> {
 		    	System.out.println("here");
 		            EventDialog.editEvent(event, calName, controller.getCalendarNames()).showAndWait();
-		            try {
-						drawMonth();
-					} catch (NoSuchCalendarException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+                    drawMonth();
 		    });
 		}
     }
@@ -304,11 +280,6 @@ public class MonthView implements CalendarViewMode {
     @Override
     public void setDate(LocalDate d) {
         currentView = d;
-        try {
-			drawMonth();
-		} catch (NoSuchCalendarException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        drawMonth();
     }
 }
