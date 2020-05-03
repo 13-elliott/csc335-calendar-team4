@@ -9,6 +9,8 @@ import java.time.LocalTime;
 
 public class CalendarEvent implements Serializable {
 
+    public static final Color DEFAULT_COLOR = Color.LIGHTGRAY;
+
     private static final long serialVersionUID = -3059578212481803086L;
     private String title;
     private LocalDate date;
@@ -65,7 +67,7 @@ public class CalendarEvent implements Serializable {
 
     public Color getColor() {
         return color == null
-                ? null
+                ? DEFAULT_COLOR
                 : Color.rgb(color.getRed(), color.getBlue(), color.getGreen());
     }
 
@@ -94,7 +96,7 @@ public class CalendarEvent implements Serializable {
     }
 
     private void setColor(Color color) {
-        if (color == null) {
+        if (color == null || color.equals(DEFAULT_COLOR)) {
             this.color = null;
         } else {
             int r = (int) (color.getRed() * 255f);
