@@ -3,19 +3,33 @@ package controller;
 import model.CalendarEvent;
 import model.CalendarModel;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
+
+import javax.annotation.Resource;
 
 /**
  * @author mollyopheim
  */
 public class CalendarController {
 	private final Map<String, CalendarModel> map;
+
+	
 
 	/**
 	 * Initializes the CalendarController to have one default CalendarModel
@@ -24,7 +38,84 @@ public class CalendarController {
 	public CalendarController() {
 		map = new HashMap<>();
 		CalendarModel newModel = new CalendarModel();
+		
 		map.put("Default", newModel);
+		
+		String directory = System.getProperty("user.home");
+		String fileName = "calendarFile";
+		String absolutePath = directory + File.separator + fileName;
+		String str = "Default";
+		File inputFile = new File(absolutePath);
+		BufferedWriter writer;
+		try {
+			writer = new BufferedWriter(new FileWriter(inputFile));
+
+			writer.write(str);
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+//		try {
+//			OutputStream outputStreamWriter = new FileOutputStream(this.getClass().getResource("calendarFile").getPath());
+//
+//			outputStreamWriter.write(3);
+//	        outputStreamWriter.close();
+//	    }
+//	    catch (IOException e) {
+//	        System.out.println("Default calendar failed");
+//	    }
+//		File calendarFile = new File(calendarFile);
+		
+		
+//		String url = getClass().getResource("calendarFile").getFile();
+//		FileWriter writer;
+//		try {
+//			writer = new FileWriter(url);
+//			BufferedWriter buffer = new BufferedWriter(writer);
+//			buffer.write("this");
+//			buffer.close();
+//			System.out.println("made it through");
+//		} catch (IOException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
+		
+//		 
+//		try {
+//			PrintWriter writer = 
+//			           new PrintWriter(
+//			                 new File(this.getClass().getResource("calendarFile").getPath()));
+//			writer.write("Defaultt");
+//		} catch (FileNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+	                     
+	                     
+		//File file = new File(
+		//		("calendarFile"));
+		
+		
+
+//		
+//		try {
+//		      File myObj = new File("/Users/mollyopheim/git/csc335-calendar-calendar-team4/src/controller/calendarFile");
+//		      Scanner myReader = new Scanner(myObj);
+//		      while (myReader.hasNextLine()) {
+//		        String data = myReader.nextLine();
+//		        System.out.println(data);
+//		      }
+//		      myReader.close();
+//		    } catch (FileNotFoundException e) {
+//		      System.out.println("An error occurred.");
+//		      e.printStackTrace();
+//		    }
+		
+		
+	
+		
 	}
 
 	/**
@@ -204,5 +295,8 @@ public class CalendarController {
 			throw new NoSuchCalendarException(calName);
 		}
 	}
+	
+	
+	
 
 }
