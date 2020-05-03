@@ -174,6 +174,7 @@ public class WeekView implements CalendarViewMode {
             for (CalendarEvent e : events) {
                 //Do some math to figure out where to put the button
                 int col = e.getDate().getDayOfWeek().getValue() + 1;
+                col = (col == 8) ? 1 : col; //sunday is the 7th day of the week, not the 1st
                 int row = e.getStartTime().getHour() + 1;
                 float diff = (e.getEndTime().getHour() + (e.getEndTime().getMinute() / 60f)) -
                         (e.getStartTime().getHour() + (e.getStartTime().getMinute() / 60f));
