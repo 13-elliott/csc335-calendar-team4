@@ -95,7 +95,7 @@ public class CalendarEvent implements Serializable {
         this.notes = notes;
     }
 
-    private void setColor(Color color) {
+    public void setColor(Color color) {
         if (color == null || color.equals(DEFAULT_COLOR)) {
             this.color = null;
         } else {
