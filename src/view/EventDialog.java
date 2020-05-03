@@ -39,6 +39,7 @@ public class EventDialog extends Dialog<Pair<String, CalendarEvent>> {
             startHourSelector, startMinuteSelector,
             endHourSelector, endMinuteSelector,
             calendarSelector;
+    private final ColorPicker colorSelector;
     private LocalDate date;
     private LocalTime start, end;
 
@@ -116,6 +117,8 @@ public class EventDialog extends Dialog<Pair<String, CalendarEvent>> {
         } else {
             calendarSelector.getSelectionModel().select(selectedCalendar);
         }
+
+        colorSelector = new ColorPicker(event != null ? event.getColor() : CalendarEvent.DEFAULT_COLOR);
 
         setupTimeElements();
         fillNonTimeElements();
@@ -273,8 +276,8 @@ public class EventDialog extends Dialog<Pair<String, CalendarEvent>> {
      * put together the scene graph for this object's DialogPane
      */
     private void constructGUI() {
-        final BorderPane titleBP, calBP, dateBP, startBP, endBP, locationBP;
-        final HBox timeHB;
+        final BorderPane titleBP, calBP, colorHB, dateBP, startBP, endBP, locationBP;
+        final HBox timeHB, calColorHB;
 
         titleBP = new BorderPane();
         titleBP.setLeft(new Label("Title: "));
@@ -283,6 +286,10 @@ public class EventDialog extends Dialog<Pair<String, CalendarEvent>> {
         calBP = new BorderPane();
         calBP.setLeft(new Label("Calendar: "));
         calBP.setCenter(calendarSelector);
+        colorHB = new BorderPane();
+        colorHB.setLeft(new Label("Color:"));
+        colorHB.setCenter(colorSelector);
+        calColorHB = new HBox(calBP, colorHB);
 
         dateBP = new BorderPane();
         dateBP.setLeft(new Label("Date: "));
@@ -314,7 +321,7 @@ public class EventDialog extends Dialog<Pair<String, CalendarEvent>> {
         notesEntryArea.setPromptText("Notes");
         notesEntryArea.setMaxSize(MAX_NOTE_AREA_WID, MAX_NOTE_AREA_HEI);
 
-        VBox mainColumn = new VBox(titleBP, calBP, dateBP, timeHB, locationBP, notesEntryArea);
+        VBox mainColumn = new VBox(titleBP, calColorHB, dateBP, timeHB, locationBP, notesEntryArea);
         mainColumn.setAlignment(Pos.TOP_CENTER);
         this.setTitle("Event Editor");
         this.getDialogPane().setContent(mainColumn);
@@ -460,7 +467,8 @@ public class EventDialog extends Dialog<Pair<String, CalendarEvent>> {
                                 start,
                                 end,
                                 nullIfBlank(locationEntryField.getText()),
-                                nullIfBlank(notesEntryArea.getText())
+                                nullIfBlank(notesEntryArea.getText()),
+                                colorSelector.getValue()
                         )
                 );
             } else {
@@ -470,6 +478,7 @@ public class EventDialog extends Dialog<Pair<String, CalendarEvent>> {
                 event.setEndTime(end);
                 event.setLocation(nullIfBlank(locationEntryField.getText()));
                 event.setNotes(nullIfBlank(notesEntryArea.getText()));
+                event.setColor(colorSelector.getValue());
                 return new Pair<>(selectedCalendar, event);
             }
         }
