@@ -188,6 +188,7 @@ public class WeekView implements CalendarViewMode {
                 b.setMaxHeight(diff * ROW_HEIGHT);
                 b.setPrefHeight(Double.MAX_VALUE);
                 b.setMaxWidth(Double.MAX_VALUE);
+                b.setBackground(new Background(new BackgroundFill(e.getColor(), null, null)));
 
                 //Set up the button event handler
                 b.setOnMouseClicked(event -> EventDialog.editEvent(e, s, controller.getCalendarNames())

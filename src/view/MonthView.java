@@ -243,6 +243,7 @@ public class MonthView implements CalendarViewMode {
 		    Button button = new Button(event.getTitle());
 		    button.setPrefSize(100, 5);
 		    button.setStyle("-fx-font-size:5");
+		    button.setBackground(new Background(new BackgroundFill(event.getColor(), null, null)));
 		    ((VBox) b.getChildren().get(1)).getChildren().add(button);
 		    button.setOnMouseClicked(butt -> {
                 System.out.println("here");
