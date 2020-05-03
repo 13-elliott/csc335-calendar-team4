@@ -1,11 +1,15 @@
 package model;
 
+import javafx.scene.paint.Color;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 public class CalendarEvent implements Serializable {
+
+    public static final Color DEFAULT_COLOR = Color.LIGHTGRAY;
 
     private static final long serialVersionUID = -3059578212481803086L;
     private String title;
@@ -14,6 +18,7 @@ public class CalendarEvent implements Serializable {
     private LocalTime endTime;
     private String location;
     private String notes;
+    private java.awt.Color color;
 
     public CalendarEvent(String title, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
         this.title = title;
@@ -22,6 +27,12 @@ public class CalendarEvent implements Serializable {
         this.endTime = endTime;
         this.location = location;
         this.notes = notes;
+    }
+
+    public CalendarEvent(String title, LocalDate date, LocalTime startTime, LocalTime endTime,
+                         String location, String notes, Color color) {
+        this(title, date, startTime, endTime, location, notes);
+        setColor(color);
     }
 
     public CalendarEvent(String title, LocalDateTime date) {
@@ -54,6 +65,12 @@ public class CalendarEvent implements Serializable {
         return notes;
     }
 
+    public Color getColor() {
+        return color == null
+                ? DEFAULT_COLOR
+                : Color.rgb(color.getRed(), color.getBlue(), color.getGreen());
+    }
+
     public void setTitle(String title) {
         this.title = title;
     }
@@ -76,5 +93,16 @@ public class CalendarEvent implements Serializable {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public void setColor(Color color) {
+        if (color == null || color.equals(DEFAULT_COLOR)) {
+            this.color = null;
+        } else {
+            int r = (int) (color.getRed() * 255f);
+            int b = (int) (color.getBlue() * 255f);
+            int g = (int) (color.getGreen() * 255f);
+            this.color = new java.awt.Color(r, b, g);
+        }
     }
 }

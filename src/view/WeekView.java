@@ -9,6 +9,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import model.CalendarEvent;
@@ -174,6 +175,7 @@ public class WeekView implements CalendarViewMode {
             for (CalendarEvent e : events) {
                 //Do some math to figure out where to put the button
                 int col = e.getDate().getDayOfWeek().getValue() + 1;
+                col = (col == 8) ? 1 : col; //sunday is the 7th day of the week, not the 1st
                 int row = e.getStartTime().getHour() + 1;
                 float diff = (e.getEndTime().getHour() + (e.getEndTime().getMinute() / 60f)) -
                         (e.getStartTime().getHour() + (e.getStartTime().getMinute() / 60f));
@@ -188,6 +190,9 @@ public class WeekView implements CalendarViewMode {
                 b.setMaxHeight(diff * ROW_HEIGHT);
                 b.setPrefHeight(Double.MAX_VALUE);
                 b.setMaxWidth(Double.MAX_VALUE);
+                Color c = e.getColor();
+                b.setBackground(new Background(new BackgroundFill(c, null, null)));
+                b.setTextFill(c.getBrightness() < 0.5 ? Color.WHITE : Color.BLACK);
 
                 //Set up the button event handler
                 b.setOnMouseClicked(event -> EventDialog.editEvent(e, s, controller.getCalendarNames())

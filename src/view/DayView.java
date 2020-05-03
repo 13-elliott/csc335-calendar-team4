@@ -7,9 +7,8 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.util.Pair;
 import model.CalendarEvent;
@@ -171,6 +170,9 @@ public class DayView implements CalendarViewMode {
                 Button butt = new Button(event.getTitle());
                 butt.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
                 butt.setAlignment(Pos.TOP_CENTER);
+                Color c = event.getColor();
+                butt.setBackground(new Background(new BackgroundFill(c, null, null)));
+                butt.setTextFill(c.getBrightness() < 0.5 ? Color.WHITE : Color.BLACK);
                 butt.setOnAction(actionEvent ->
                         EventDialog.editEvent(event, calName, controller.getCalendarNames())
                                 .showAndWait()
