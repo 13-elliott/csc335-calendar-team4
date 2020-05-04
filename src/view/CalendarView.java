@@ -38,7 +38,7 @@ public class CalendarView extends Application {
         this.stage = stage;
 
         try {
-            controller = new CalendarController();
+            controller = new CalendarController(new java.io.File("calendars.bin"));
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("An unrecoverable error occurred. Terminating execution.");

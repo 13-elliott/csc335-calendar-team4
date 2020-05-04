@@ -26,8 +26,11 @@ public class CalendarController {
 	 * Loads previous CalendarModel's and their respective events
 	 * from the calendarFile if applicable.
 	 */
-	public CalendarController() throws IOException {
-		calFile = new File("calendars.bin");
+	public CalendarController(File calFile) throws IOException {
+		if (calFile == null) {
+			throw new IllegalArgumentException("given File must not be null");
+		}
+		this.calFile = calFile;
 		if (calFile.exists()) {
 			map = loadCalendars();
 		} else {
