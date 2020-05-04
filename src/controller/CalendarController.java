@@ -92,7 +92,6 @@ public class CalendarController {
 			throw new CalendarAlreadyExistsException(name);
 		} else {
 			map.put(name, new CalendarModel());
-			saveCalendars();
 		}
 	}
 
@@ -103,7 +102,6 @@ public class CalendarController {
 	 * @param name -- the name of the CalendarModel to be removed
 	 */
 	public boolean deleteCalendar(String name) {
-		saveCalendars();
 		return map.remove(name) != null;
 	}
 
@@ -123,9 +121,7 @@ public class CalendarController {
 		} else if (map.containsKey(newName)) {
 			throw new CalendarAlreadyExistsException(newName);
 		} else {
-			
 			map.put(newName, map.remove(oldName));
-			saveCalendars();
 		}
 	}
 
@@ -139,7 +135,6 @@ public class CalendarController {
 	public void addEvent(String calName, CalendarEvent newEvent) throws NoSuchCalendarException {
 		if (map.containsKey(calName)) {
 			map.get(calName).addEvent(newEvent);
-			saveCalendars();
 		} else {
 			throw new NoSuchCalendarException(calName);
 		}
@@ -155,7 +150,6 @@ public class CalendarController {
 	public void removeEvent(String calName, CalendarEvent newEvent) throws NoSuchCalendarException {
 		if (map.containsKey(calName)) {
 			map.get(calName).removeEvent(newEvent);
-			saveCalendars();
 		} else {
 			throw new NoSuchCalendarException(calName);
 		}
