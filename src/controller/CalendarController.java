@@ -28,16 +28,6 @@ public class CalendarController {
 	}
 
 	/**
-	 * Ensures that the end date is after the start date
-	 * @param start -- the start date of the event
-	 * @param end -- the end date
-	 * @return true if the start date is before the end date, false if otherwise
-	 */
-	private boolean checkDate(LocalTime start, LocalTime end) {
-		return start.isBefore(end);
-	}
-
-	/**
 	 * get a set containing the names of all the calendars.
 	 *
 	 * @return a set containing the names of all the calendars
