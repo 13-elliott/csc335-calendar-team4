@@ -31,7 +31,13 @@ public class CalendarView extends Application {
     public void start(Stage stage) {
         this.stage = stage;
 
-        controller = new CalendarController();
+        try {
+            controller = new CalendarController();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("An unrecoverable error occurred. Terminating execution.");
+            System.exit(1);
+        }
         currentlyVisibleCals = controller.getCalendarNames();
         month = new MonthView(controller);
         day = new DayView(controller);
