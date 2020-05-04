@@ -3,6 +3,7 @@ package controller;
 import model.CalendarEvent;
 import model.CalendarModel;
 
+import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -15,16 +16,53 @@ import java.util.Set;
  * @author mollyopheim
  */
 public class CalendarController {
-	private final Map<String, CalendarModel> map;
+	private final HashMap<String, CalendarModel> map;
+	private final File calFile;
+
 
 	/**
 	 * Initializes the CalendarController to have one default CalendarModel
 	 * in the map that keeps track of the CalendarModel objects.
+	 * Loads previous CalendarModel's and their respective events
+	 * from the calendarFile if applicable.
 	 */
-	public CalendarController() {
-		map = new HashMap<>();
-		CalendarModel newModel = new CalendarModel();
-		map.put("Default", newModel);
+	public CalendarController(File calFile) throws IOException {
+		if (calFile == null) {
+			throw new IllegalArgumentException("given File must not be null");
+		}
+		this.calFile = calFile;
+		if (calFile.exists()) {
+			map = loadCalendars();
+		} else {
+			map = new HashMap<>();
+			map.put("Default", new CalendarModel());
+		}
+		saveCalendars();
+	}
+
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	private HashMap<String, CalendarModel> loadCalendars() throws IOException {
+		HashMap loaded;
+		try {
+			FileInputStream fIn = new FileInputStream(calFile);
+			ObjectInputStream objIn = new ObjectInputStream(fIn);
+			loaded = (HashMap) objIn.readObject();
+		} catch (IOException | ClassNotFoundException e) {
+			throw new IOException(String.format("Error loading the calendar file at \"%s\"\n",
+					calFile.getAbsolutePath()));
+		}
+		Set<Map.Entry> loadedEntries = loaded.entrySet();
+		if (!loadedEntries.isEmpty()) {
+			for (Map.Entry e : loadedEntries) {
+				if (!(e.getKey() instanceof String && e.getValue() instanceof CalendarModel)) {
+					throw new IOException(String.format("Calendar file at \"%s\" is corrupted.",
+							calFile.getAbsolutePath()));
+				}
+			}
+		} else {
+			loaded.put("Default", new CalendarModel());
+		}
+		return (HashMap<String, CalendarModel>) loaded;
 	}
 
 	/**
@@ -195,4 +233,21 @@ public class CalendarController {
 		}
 	}
 
+	/**
+	 * Saves the CalendarModel objects and their respective CalendarEvents
+	 * to the calendar file.
+	 * This is done by converting each aspect of the CalendarEvents to a
+	 * String and storing it on a separate line in the calendarFile. The
+	 * end of a CalendarEvent is marked by a line with a single dash only.
+	 */
+	public void saveCalendars() {
+		BufferedWriter writer = null;
+		try {
+			FileOutputStream fOut = new FileOutputStream(calFile);
+			ObjectOutputStream objOut = new ObjectOutputStream(fOut);
+			objOut.writeObject(map);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }

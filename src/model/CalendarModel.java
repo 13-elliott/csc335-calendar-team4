@@ -97,6 +97,16 @@ public class CalendarModel extends Observable implements Serializable {
                         before, after))
                 .toArray(CalendarEvent[]::new);
     }
+    
+    /**
+     * Returns a list of all of the CalendarEvents in the
+     * calendar.
+     * 
+     * @return all of the events associated with this calendar
+     */
+    public List<CalendarEvent> getAllEvents() {
+    	return events;
+    }
 
     /**
      * Add a CalendarEvent to this calendar

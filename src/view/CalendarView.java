@@ -4,6 +4,7 @@ import controller.CalendarAlreadyExistsException;
 import controller.CalendarController;
 import controller.NoSuchCalendarException;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -11,6 +12,8 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+import java.time.Duration;
 import java.util.*;
 
 /**
@@ -23,6 +26,9 @@ public class CalendarView extends Application {
             current;
     private Set<String> currentlyVisibleCals;
     private VBox mainColumn;
+    private final Duration
+            SAVE_INTERVAL = Duration.ofSeconds(30),
+            SAVE_DELAY = SAVE_INTERVAL;
 
     /**
      * @param stage represents the main application window.
@@ -31,7 +37,13 @@ public class CalendarView extends Application {
     public void start(Stage stage) {
         this.stage = stage;
 
-        controller = new CalendarController();
+        try {
+            controller = new CalendarController(new java.io.File("calendars.bin"));
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("An unrecoverable error occurred. Terminating execution.");
+            System.exit(1);
+        }
         currentlyVisibleCals = controller.getCalendarNames();
         month = new MonthView(controller);
         day = new DayView(controller);
@@ -43,6 +55,20 @@ public class CalendarView extends Application {
 
         stage.setTitle("Calendar");
         stage.setScene(new Scene(mainColumn));
+        // schedule periodic saving
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                // use runLater to avoid data races
+                Platform.runLater(() -> controller.saveCalendars());
+            }
+        }, SAVE_DELAY.toMillis(), SAVE_INTERVAL.toMillis());
+        stage.setOnCloseRequest(e -> {
+            timer.cancel();
+            controller.saveCalendars();
+        });
+
         stage.show();
     }
 
