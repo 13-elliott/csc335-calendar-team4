@@ -3,111 +3,66 @@ package controller;
 import model.CalendarEvent;
 import model.CalendarModel;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Scanner;
 import java.util.Set;
-
-import javax.annotation.Resource;
 
 /**
  * @author mollyopheim
  */
 public class CalendarController {
-	private final Map<String, CalendarModel> map;
+	private final HashMap<String, CalendarModel> map;
+	private final File calFile;
 
-	
 
 	/**
 	 * Initializes the CalendarController to have one default CalendarModel
 	 * in the map that keeps track of the CalendarModel objects.
 	 * Loads previous CalendarModel's and their respective events
-	 * from the calendarFile if applicable. 
+	 * from the calendarFile if applicable.
 	 */
-	public CalendarController() {
-		map = new HashMap<>();
-		try {
-			File calFile = new File("src/controller/calendarFile");
-			Scanner scan  = new Scanner(calFile);
-			if (calFile.length() == 0) {
-				
-				CalendarModel newModel = new CalendarModel();
-				
-				map.put("Default", newModel);
-			}
-			
-			String name = null;
-			while (scan.hasNextLine()) {
-				String line = scan.nextLine();
-				
-				if (line.length() > 11) {
-					if (line.substring(0, 10).equals("Calendar: ")) {
-				
-						name = line.substring(10);
-						createNewCalendar(name);
-					}
-				}
-				
-				if (scan.hasNextLine()) {
-
-					if (line.length() < 10 || !(line.substring(0, 10).equals("Calendar: "))) {
-						// title
-						String title = line;
-						// date
-						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-						formatter = formatter.withLocale(Locale.US);
-						LocalDate date = LocalDate.parse(scan.nextLine(), formatter);
-						// startTime
-						LocalTime startTime = LocalTime.parse(scan.nextLine());
-						// endTime
-						LocalTime endTime = LocalTime.parse(scan.nextLine());
-						// location
-						String location = scan.nextLine();
-						// notes
-						String notes = scan.nextLine();
-						line = scan.nextLine();
-						while (!(line.equals("-"))) {
-							notes += line;
-							line = scan.nextLine();
-						}
-						CalendarEvent newEvent = new CalendarEvent(title, date, startTime, endTime, location, notes);
-						addEvent(name, newEvent);
-					} 
-
-
-				}
-			}
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (CalendarAlreadyExistsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchCalendarException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public CalendarController(File calFile) throws IOException {
+		if (calFile == null) {
+			throw new IllegalArgumentException("given File must not be null");
 		}
-
-		
+		this.calFile = calFile;
+		if (calFile.exists()) {
+			map = loadCalendars();
+		} else {
+			map = new HashMap<>();
+			map.put("Default", new CalendarModel());
+		}
 		saveCalendars();
-		
+	}
+
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	private HashMap<String, CalendarModel> loadCalendars() throws IOException {
+		HashMap loaded;
+		try {
+			FileInputStream fIn = new FileInputStream(calFile);
+			ObjectInputStream objIn = new ObjectInputStream(fIn);
+			loaded = (HashMap) objIn.readObject();
+		} catch (IOException | ClassNotFoundException e) {
+			throw new IOException(String.format("Error loading the calendar file at \"%s\"\n",
+					calFile.getAbsolutePath()));
+		}
+		Set<Map.Entry> loadedEntries = loaded.entrySet();
+		if (!loadedEntries.isEmpty()) {
+			for (Map.Entry e : loadedEntries) {
+				if (!(e.getKey() instanceof String && e.getValue() instanceof CalendarModel)) {
+					throw new IOException(String.format("Calendar file at \"%s\" is corrupted.",
+							calFile.getAbsolutePath()));
+				}
+			}
+		} else {
+			loaded.put("Default", new CalendarModel());
+		}
+		return (HashMap<String, CalendarModel>) loaded;
 	}
 
 	/**
@@ -140,7 +95,6 @@ public class CalendarController {
 			throw new CalendarAlreadyExistsException(name);
 		} else {
 			map.put(name, new CalendarModel());
-			saveCalendars();
 		}
 	}
 
@@ -151,7 +105,6 @@ public class CalendarController {
 	 * @param name -- the name of the CalendarModel to be removed
 	 */
 	public boolean deleteCalendar(String name) {
-		saveCalendars();
 		return map.remove(name) != null;
 	}
 
@@ -171,9 +124,7 @@ public class CalendarController {
 		} else if (map.containsKey(newName)) {
 			throw new CalendarAlreadyExistsException(newName);
 		} else {
-			
 			map.put(newName, map.remove(oldName));
-			saveCalendars();
 		}
 	}
 
@@ -187,7 +138,6 @@ public class CalendarController {
 	public void addEvent(String calName, CalendarEvent newEvent) throws NoSuchCalendarException {
 		if (map.containsKey(calName)) {
 			map.get(calName).addEvent(newEvent);
-			saveCalendars();
 		} else {
 			throw new NoSuchCalendarException(calName);
 		}
@@ -203,7 +153,6 @@ public class CalendarController {
 	public void removeEvent(String calName, CalendarEvent newEvent) throws NoSuchCalendarException {
 		if (map.containsKey(calName)) {
 			map.get(calName).removeEvent(newEvent);
-			saveCalendars();
 		} else {
 			throw new NoSuchCalendarException(calName);
 		}
@@ -293,56 +242,22 @@ public class CalendarController {
 			throw new NoSuchCalendarException(calName);
 		}
 	}
-	
+
 	/**
 	 * Saves the CalendarModel objects and their respective CalendarEvents
-	 * to the calendarFile. 
-	 * This is done by converting each aspect of the CalendarEvents to a 
+	 * to the calendar file.
+	 * This is done by converting each aspect of the CalendarEvents to a
 	 * String and storing it on a separate line in the calendarFile. The
 	 * end of a CalendarEvent is marked by a line with a single dash only.
 	 */
-	private void saveCalendars() {
+	public void saveCalendars() {
 		BufferedWriter writer = null;
-		File inputFile = new File("src/controller/calendarFile");
 		try {
-			writer = new BufferedWriter(new FileWriter(inputFile));
-			for (Entry<String, CalendarModel> entry : map.entrySet()) {
-				String key = entry.getKey();
-				CalendarModel curModel = entry.getValue();
-			
-			
-				
-			
-				
-				writer.write("Calendar: " + key + "\n");
-				List<CalendarEvent> eventList = curModel.getAllEvents();
-				for (CalendarEvent event: eventList) {
-					writer.write(event.getTitle() + "\n");
-					writer.write(event.getDate().toString() + "\n");
-					writer.write(event.getStartTime().toString() + "\n");
-					writer.write(event.getEndTime().toString() + "\n");
-					writer.write(event.getLocation() + "\n");
-					writer.write(event.getNotes() + "\n");
-					
-					// marks the end of a CalendarEvent
-					writer.write("-\n");
-					
-				}
-			}
-				
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-		
-		try {
-			writer.close();
+			FileOutputStream fOut = new FileOutputStream(calFile);
+			ObjectOutputStream objOut = new ObjectOutputStream(fOut);
+			objOut.writeObject(map);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
-
 }

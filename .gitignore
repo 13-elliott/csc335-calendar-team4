@@ -30,3 +30,7 @@ hs_err_pid*
 /*.iml
 /.idea/
 /bin/
+
+# serialized files
+calendarFile
+calendars.bin
