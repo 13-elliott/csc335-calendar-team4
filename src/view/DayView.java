@@ -120,7 +120,9 @@ public class DayView implements CalendarViewMode {
      *
      * @return a new GridPane to represent the current day
      */
-    private static GridPane constructDayPane() {
+    private GridPane constructDayPane() {
+        boolean today = date.equals(LocalDate.now());
+        int now = getRowNumber(LocalTime.now());
         GridPane dayPane = new GridPane();
 //        dayPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 //        dayPane.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
@@ -133,7 +135,9 @@ public class DayView implements CalendarViewMode {
         for (int row = 0; row < NUM_ROWS; row++) {
             String timeStr = String.format("%02d:%02d", hour, minute);
             Label l = new Label(timeStr);
-            if (row % 2 == 0) {
+            if (today && row == now) {
+                l.setStyle("-fx-background-color: aqua; -fx-border-color: black");
+            } else if (row % 2 == 0) {
                 l.setStyle("-fx-background-color: lightgray; -fx-border-color: black");
             } else {
                 l.setStyle("-fx-border-color: black");
