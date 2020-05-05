@@ -17,7 +17,7 @@ import java.util.Set;
  */
 public class CalendarController {
 	private final HashMap<String, CalendarModel> map;
-	private final File calFile;
+	public final File calFile;
 
 
 	/**
@@ -63,16 +63,6 @@ public class CalendarController {
 			loaded.put("Default", new CalendarModel());
 		}
 		return (HashMap<String, CalendarModel>) loaded;
-	}
-
-	/**
-	 * Ensures that the end date is after the start date
-	 * @param start -- the start date of the event
-	 * @param end -- the end date
-	 * @return true if the start date is before the end date, false if otherwise
-	 */
-	private boolean checkDate(LocalTime start, LocalTime end) {
-		return start.isBefore(end);
 	}
 
 	/**
