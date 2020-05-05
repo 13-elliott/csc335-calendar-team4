@@ -17,7 +17,7 @@ import java.util.Set;
  */
 public class CalendarController {
 	private final HashMap<String, CalendarModel> map;
-	private final File calFile;
+	public final File calFile;
 
 
 	/**
