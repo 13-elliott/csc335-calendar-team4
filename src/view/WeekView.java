@@ -22,6 +22,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * @author Jessica Coan
+ */
 public class WeekView implements CalendarViewMode {
     private static final int ROW_HEIGHT = 50;
 

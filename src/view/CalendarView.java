@@ -72,6 +72,9 @@ public class CalendarView extends Application {
         stage.show();
     }
 
+    /**
+     * @return a menu bar full of menus.
+     */
     private MenuBar constructMenus() {
         Menu viewMenu = new Menu("View");
         MenuItem monthItem = new MenuItem("Month");
@@ -123,6 +126,13 @@ public class CalendarView extends Application {
         stage.sizeToScene();
     }
 
+    /**
+     * display a ChoiceDialog to the user for selecting one of the existing calendars
+     *
+     * @param prompt the prompt which will be shown to the user
+     * @return an optional string. If present, then the user selected the calendar named
+     * by that string. If not present, then the user did not select anything (i.e. canceled)
+     */
     private Optional<String> selectOneCalendar(String prompt) {
         ChoiceDialog<String> cd = new ChoiceDialog<>();
         cd.setTitle("Select Calendar");
@@ -139,6 +149,14 @@ public class CalendarView extends Application {
         return cd.showAndWait();
     }
 
+    /**
+     * display a TextInputDialog to the user for naming a calendar.
+     * Validates that a calendar by the given name does not already exist.
+     *
+     * @param prompt a prompt to display to the user
+     * @return an optional string containing the user's input. If not present,
+     * then the user canceled the operation.
+     */
     private Optional<String> getNewCalendarName(String prompt) {
         TextInputDialog in = new TextInputDialog();
         in.setTitle("Name Calendar");
@@ -159,6 +177,11 @@ public class CalendarView extends Application {
         return in.showAndWait();
     }
 
+    /**
+     * event handler to create a new calendar.
+     *
+     * @param e unused
+     */
     private void createCalendar(ActionEvent e) {
         getNewCalendarName("Please enter a name for the new calendar").ifPresent(newName -> {
             try {
@@ -172,6 +195,11 @@ public class CalendarView extends Application {
         });
     }
 
+    /**
+     * event handler to create a new event
+     *
+     * @param e unused
+     */
     private void createEvent(ActionEvent e) {
         EventDialog.newEvent(controller.getCalendarNames())
                 .showAndWait()
@@ -186,6 +214,13 @@ public class CalendarView extends Application {
                 });
     }
 
+    /**
+     * event handler to change the visible calendars.
+     * displays a new Dialog to the user containing a list of
+     * all the existing calendars from which the user can select multiple.
+     *
+     * @param actionEvent unused
+     */
     private void changeVisibleCals(ActionEvent actionEvent) {
         Dialog<Set<String>> multipleSelectDialog = new Dialog<>();
         {   // setup the dialog
@@ -218,6 +253,13 @@ public class CalendarView extends Application {
                 });
     }
 
+    /**
+     * event handler to rename an existing calendar
+     * uses both {@link #selectOneCalendar(String)}
+     * and {@link #getNewCalendarName(String)}
+     *
+     * @param actionEvent unused
+     */
     private void renameCalendar(ActionEvent actionEvent) {
         selectOneCalendar("Select a calendar to rename")
                 .ifPresent(oldName ->
@@ -235,6 +277,12 @@ public class CalendarView extends Application {
                 );
     }
 
+    /**
+     * event handler to delete an existing calendar.
+     * does nothing if there is only one calendar
+     *
+     * @param actionEvent unused
+     */
     private void deleteCalendar(ActionEvent actionEvent) {
         if (controller.getCalendarNames().size() <= 1) {
             new Alert(Alert.AlertType.ERROR, "Cannot delete the only remaining calendar")

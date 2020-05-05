@@ -6,7 +6,6 @@ import model.CalendarModel;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -14,9 +13,13 @@ import java.util.Set;
 
 /**
  * @author mollyopheim
+ * @author Kitty Elliott
  */
 public class CalendarController {
 	private final HashMap<String, CalendarModel> map;
+	/**
+	 * Represents the file on disk where the calendar(s) are saved and/or loaded
+	 */
 	public final File calFile;
 
 
@@ -40,6 +43,14 @@ public class CalendarController {
 		saveCalendars();
 	}
 
+	/**
+	 * Load the calendar state from the file specified by {@link #calFile}.
+	 *
+	 * @return the mapping of calendar names to CalendarModel objects which
+	 * was loaded from the file
+	 * @throws IOException if there was an error reading the file, or if the
+	 *                     file data is somehow corrupt
+	 */
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	private HashMap<String, CalendarModel> loadCalendars() throws IOException {
 		HashMap loaded;
@@ -235,10 +246,7 @@ public class CalendarController {
 
 	/**
 	 * Saves the CalendarModel objects and their respective CalendarEvents
-	 * to the calendar file.
-	 * This is done by converting each aspect of the CalendarEvents to a
-	 * String and storing it on a separate line in the calendarFile. The
-	 * end of a CalendarEvent is marked by a line with a single dash only.
+	 * to the calendar file specified by {@link #calFile}
 	 */
 	public void saveCalendars() {
 		BufferedWriter writer = null;

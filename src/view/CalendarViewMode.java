@@ -7,6 +7,8 @@ import java.time.LocalDate;
 import java.util.Set;
 
 /**
+ * interface for implementing a new calendar viewing mode
+ *
  * @author Kitty Elliott
  */
 public interface CalendarViewMode {

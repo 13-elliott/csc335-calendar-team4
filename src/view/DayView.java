@@ -17,6 +17,12 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
 
+/**
+ * Represents the "day view" of the CalendarView.
+ * Displays a single day's worth of events.
+ *
+ * @author Kitty Elliott
+ */
 public class DayView implements CalendarViewMode {
     private static final int NUM_HOUR_SUBSECTIONS = 4;
     private static final int MINUTE_INCREMENT = 60 / NUM_HOUR_SUBSECTIONS;

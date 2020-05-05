@@ -16,9 +16,7 @@ import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.*;
 /**
- * 
  * @author andrewfiliberti
- *
  */
 public class MonthView implements CalendarViewMode {
     private BorderPane outer;

@@ -3,7 +3,9 @@ package model;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Observable;
 
 /**
  * A representation of a calendar of events
@@ -43,7 +45,6 @@ public class CalendarModel extends Observable implements Serializable {
 
     /**
      * Gets all the events on a particular day
-     * NOTE: Numbering of months and days in Java Calendar start at 0
      *
      * @param year  year of day
      * @param month month of day
@@ -57,13 +58,18 @@ public class CalendarModel extends Observable implements Serializable {
         return getEventsInRange(before, after);
     }
 
+    /**
+     * Get all events that occur on a specified day
+     *
+     * @param day the day on which the events occur
+     * @return an array containing the events
+     */
     public CalendarEvent[] getEventsInDay(LocalDate day) {
         return getEventsInDay(day.getYear(), day.getMonthValue(), day.getDayOfMonth());
     }
 
     /**
      * Get all the events that occur within a specific hour
-     * NOTE: Numbering of month, day, and hour start at 0
      *
      * @param year  year of hour
      * @param month month of hour
@@ -78,6 +84,12 @@ public class CalendarModel extends Observable implements Serializable {
         return getEventsInRange(before, after);
     }
 
+    /**
+     * Get all the events that occur within a specific hour
+     *
+     * @param time the hour in question
+     * @return an array of all the events that occur in that hour
+     */
     public CalendarEvent[] getEventsInHour(LocalDateTime time) {
         return getEventsInHour(time.getYear(), time.getMonthValue(), time.getDayOfMonth(), time.getHour());
     }
