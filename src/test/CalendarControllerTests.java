@@ -23,6 +23,9 @@ import model.CalendarModel;
 public class CalendarControllerTests {
 	
 	private static File testFile = new File("test_cals.bin");
+	private static File testFile1 = new File("");
+	private static File testFile2 = new File("test_cals.bin");
+
 
 	@Test
 	public void testControllerNull() {
@@ -269,6 +272,7 @@ public class CalendarControllerTests {
 		CalendarEvent event2 = new CalendarEvent("event2", time2);
 		CalendarEvent event3 = new CalendarEvent("event3", time3);
 		model.markModified(event3);
+		model.getAllEvents();
 
 		CalendarEvent[] events = {event1,event2};
 		
@@ -288,5 +292,41 @@ public class CalendarControllerTests {
 		assertTrue(events[1].equals(cont1.getEventsInRange("Default", x,y)[1]));
 		Files.deleteIfExists(cont1.calFile.toPath());
 	}
+	
+	/**
+	 * Tests loadCalendars()
+	 * @throws NoSuchCalendarException 
+	 */
+	@Test
+	public void testloadCal() throws NoSuchCalendarException, IOException {
+		CalendarController cont1 = new CalendarController(testFile);
+		LocalDateTime time1 = LocalDateTime.of(2020, Month.APRIL, 1, 2,30,20,40);
+		LocalDateTime time2 = LocalDateTime.of(2020, Month.APRIL, 1, 4,30,20,40);
+		LocalDateTime time3 = LocalDateTime.of(2020, Month.FEBRUARY, 3, 2,30,20,40); 
+		
+		CalendarController cont2 = new CalendarController(testFile2);
+		CalendarController cont3 = new CalendarController(testFile1);
+		
+
+		CalendarEvent event1 = new CalendarEvent("event1", time1);
+		CalendarEvent event2 = new CalendarEvent("event2", time2);
+		CalendarEvent event3 = new CalendarEvent("event3", time3);
+		CalendarEvent[] events = {event1};
+		
+		cont1.addEvent("Default", event1);
+		cont1.addEvent("Default", event2); 
+		cont1.addEvent("Default", event3);
+
+		LocalDateTime x = LocalDateTime.of(2020, Month.APRIL, 1, 2, 30,20,40);
+		
+		assertThrows(NoSuchCalendarException.class,
+		           () -> {
+		       			cont1.getEventsInHour("not a calendar", x);
+		           });
+		
+		assertTrue(events[0].equals(cont1.getEventsInHour("Default", x)[0]));
+		Files.deleteIfExists(cont1.calFile.toPath());
+	}
+	
 }
 
